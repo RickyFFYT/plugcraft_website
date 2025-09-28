@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Global UI helpers moved from pages/index.tsx to avoid styled-jsx parsing issues */
+.glass-card {
+	background: rgba(24, 28, 44, 0.32) !important;
+	box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1.5px 0 0 rgba(255,255,255,0.08);
+	backdrop-filter: blur(32px) saturate(180%);
+	-webkit-backdrop-filter: blur(32px) saturate(180%);
+	border-radius: 1.5rem;
+	border: 1.5px solid rgba(255,255,255,0.08);
+	transition: box-shadow 0.2s, background 0.2s;
+}
+@keyframes lineAnim {
+	0% { stroke-dashoffset: 0; }
+	100% { stroke-dashoffset: 120; }
+}
+
+@keyframes fade-in {
+	from { opacity: 0; transform: translateY(24px); }
+	to { opacity: 1; transform: none; }
+}
+.animate-fade-in {
+	animation: fade-in 1s cubic-bezier(0.4,0,0.2,1) both;
+}
+.animate-fade-in-up {
+	animation: fade-in 1.2s cubic-bezier(0.4,0,0.2,1) both;
+}
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+@keyframes blob {
+	0%,100% { transform: scale(1) translateY(0); }
+	33% { transform: scale(1.1,0.9) translateY(-10px); }
+	66% { transform: scale(0.95,1.05) translateY(10px); }
+}
+.animate-blob {
+	animation: blob 12s infinite ease-in-out;
+}
+.animate-pulse {
+	animation: pulse 2.5s cubic-bezier(0.4,0,0.6,1) infinite;
+}
+/* Animated diagonal lines background (CSS only) */
+.animated-lines {
+	background-image: repeating-linear-gradient(135deg, rgba(99,102,241,0.12) 0 2px, transparent 2px 12px), repeating-linear-gradient(135deg, rgba(162,28,175,0.08) 0 1px, transparent 1px 20px);
+	background-size: 240px 240px, 360px 360px;
+	animation: linesMove 12s linear infinite;
+}
+@keyframes linesMove {
+	from { background-position: 0 0, 0 0; }
+	to { background-position: 480px 480px, -360px -360px; }
+}
