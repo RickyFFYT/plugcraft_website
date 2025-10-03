@@ -57,6 +57,8 @@ export default function Home() {
 
   return (
     <div className="relative overflow-hidden min-h-screen">
+      {/* Skip link for keyboard users */}
+      <a href="#home-heading" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-white/8 focus:text-white focus:px-3 focus:py-2 focus:rounded" aria-label="Skip to main content">Skip to main content</a>
       {/* Background image with dark overlay for contrast - use local optimized asset */}
       <div
         className="absolute inset-0 -z-10"
@@ -72,41 +74,76 @@ export default function Home() {
       <div className="pointer-events-none absolute inset-0 -z-20 overflow-hidden">
         <div className="absolute inset-0 animated-lines" />
       </div>
-      <section className="relative">
-        <div className="mx-auto max-w-6xl px-4 pt-20 pb-24 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center glass-card border-2 border-white/10 shadow-2xl shadow-black/40 backdrop-blur-xl" style={{ boxShadow: '0 8px 64px 0 rgba(0,0,0,0.35), 0 1.5px 0 0 rgba(255,255,255,0.08)'}}>
-            <div className="flex flex-col items-center gap-6 mb-8">
-              <Image src={GhostedLogo} alt="Ghosted Logo" className="drop-shadow-lg" width={160} height={80} priority />
-              <div className="rounded-xl overflow-hidden shadow-xl border-2 border-white/10 bg-black/20 backdrop-blur-lg">
-                <Image src={SoftwareLogo} alt="Ghosted Software Logo" width={384} height={240} className="object-cover" />
+      <section className="relative overflow-hidden" aria-labelledby="home-heading">
+        {/* Decorative gradient blobs for depth */}
+        <div className="absolute -left-40 top-8 bg-blob blob-lg bg-gradient-to-br from-pink-500 to-indigo-500 animate-drift" aria-hidden="true" />
+        <div className="absolute right-0 -bottom-32 bg-blob blob-md bg-gradient-to-br from-cyan-400 to-blue-600 animate-drift" aria-hidden="true" />
+
+        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+            {/* Text column */}
+            <div className="md:col-span-7">
+              <div className="mb-6 inline-flex items-center gap-3">
+                <span className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/8 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-200 shadow-sm">
+                  Ghosted — Plug & Play
+                </span>
+              </div>
+
+              <h1 id="home-heading" className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-white gradient-heading">
+                Take control. Win more.
+              </h1>
+
+              <p className="mt-6 text-lg text-slate-200 max-w-2xl">
+                Experience seamless lag control with a beautiful UI, instant setup, and real-time control. Ghosted is built for gamers who want to focus on play — not configuration.
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-4">
+                <Link
+                  href={user ? '/dashboard' : '/signup'}
+                  className="btn-primary"
+                  aria-label={user ? 'Open dashboard' : 'Sign up for Ghosted'}
+                >
+                  {user ? 'Open dashboard' : 'Get Ghosted now'}
+                </Link>
+
+                <Link
+                  href={user ? '/login' : '#features'}
+                  className="btn-ghost"
+                  aria-label="Explore features"
+                >
+                  Explore features
+                </Link>
               </div>
             </div>
-            <span className="inline-flex items-center rounded-full border border-indigo-500/40 bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-200 shadow-md">
-              Ghosted — Plug & Play Lagswitch for Gamers
-            </span>
-            <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl animate-fade-in drop-shadow-xl">
-              Take control. Win more. Ghosted is the lagswitch made for gamers, by gamers.
-            </h1>
-            <p className="mt-6 text-lg text-slate-200 animate-fade-in delay-100 drop-shadow">
-              Experience seamless lag control with a beautiful UI, easy setup, and instant results. Ghosted is plug and play—trusted by the community, powered by Dracaryn Studio.
-            </p>
-            <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row animate-fade-in delay-200">
-              <Link
-                href={user ? '/dashboard' : '/signup'}
-                className="inline-flex items-center rounded-lg bg-gradient-to-tr from-indigo-500 via-purple-600 to-fuchsia-500 px-7 py-3 text-base font-bold text-white shadow-lg shadow-indigo-900/30 transition hover:scale-105 hover:from-indigo-400 hover:to-fuchsia-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              >
-                {user ? 'Open dashboard' : 'Get Ghosted now'}
-              </Link>
-              <Link
-                href={user ? '/login' : '#features'}
-                className="inline-flex items-center rounded-lg border border-white/20 px-7 py-3 text-base font-semibold text-white/80 bg-black/30 shadow hover:border-white/40 hover:text-white hover:bg-black/50 transition"
-              >
-                Explore features
-              </Link>
+
+            {/* Visual column: layered glass card */}
+            <div className="md:col-span-5 relative flex justify-center md:justify-end">
+              <div className="relative w-full max-w-md">
+                {/* Subtle tilted shadow layer for depth */}
+                <div className="absolute -inset-6 transform rotate-3 rounded-2xl glass-panel opacity-60" aria-hidden="true" />
+                <div className="absolute -inset-10 transform -rotate-2 rounded-3xl bg-gradient-to-br from-black/40 to-transparent blur-3xl opacity-30" aria-hidden="true" />
+
+                <div className="relative glass-panel glass-outline p-4">
+                  <div className="rounded-xl overflow-hidden border border-white/6 shadow-2xl">
+                    <Image
+                      src={SoftwareLogo}
+                      alt="Ghosted UI preview"
+                      width={540}
+                      height={320}
+                      sizes="(max-width: 768px) 100vw, 540px"
+                      className="object-cover w-full h-auto"
+                      style={{ height: 'auto' }}
+                      aria-hidden="false"
+                    />
+                  </div>
+                </div>
+
+                {/* Small badge/logo at the base */}
+                <div className="absolute -bottom-6 left-4 flex items-center gap-3">
+                  <Image src={GhostedLogo} alt="Ghosted logo" width={120} height={56} className="drop-shadow-lg" />
+                </div>
+              </div>
             </div>
-            <p className="mt-6 text-sm uppercase tracking-[0.2em] text-slate-300 animate-fade-in delay-300">
-              Made by <span className="font-semibold text-white">Dracaryn Studio</span> — For Gamers, By Gamers
-            </p>
           </div>
         </div>
       </section>

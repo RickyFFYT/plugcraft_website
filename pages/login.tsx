@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -30,20 +29,21 @@ export default function LoginPage() {
     setLoading(true)
     setFeedback(null)
 
-    // Security-first: if the device is not trusted, enforce email verification
-    // by sending a magic link instead of allowing password-only login.
-    // If the user checks "Trust this device", we will sign-in with password
-    // and optionally persist a trusted marker after a successful flow.
     try {
-      // Check local trusted marker for this email (simple client-side trust)
-      const trustedKey = `trusted_device:${email.toLowerCase()}`
-      const trusted = !!(typeof window !== 'undefined' && localStorage.getItem(trustedKey))
+      // First, check if this device is already trusted for the provided email.
+      // This endpoint reads the httpOnly cookie that marks a device and returns
+      // whether it is trusted for this email. If it's trusted we can allow a
+      // password sign-in without forcing a magic link.
+      const checkResp = await fetch(`/api/check-device?email=${encodeURIComponent(email)}`)
+      const checkJson = await checkResp.json()
+      const deviceTrusted = checkJson?.trusted === true
 
-      if (!trustDevice && !trusted) {
-        // Send magic link and prompt user to check email
+      if (!trustDevice && !deviceTrusted) {
+        // Not trusting device and device not previously verified: require magic link flow
+        const redirectUrl = `${window.location.origin}/verify?method=magic&email=${encodeURIComponent(email)}`
         const { error } = await supabaseClient.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard?trusted=1` },
+          options: { emailRedirectTo: redirectUrl },
         })
         if (error) {
           setFeedback({ type: 'error', message: error.message })
@@ -54,8 +54,12 @@ export default function LoginPage() {
         return
       }
 
-      // If device is trusted, proceed with password sign-in
-      const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+      // If device is trusted OR user checked "trust this device", proceed
+      // with password sign-in. If user requested to trust the device we will
+      // still require a follow-up verification email to finalize the trusted
+      // device registration (the server will only mark devices trusted after
+      // the user clicks the verification link).
+      const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
       })
@@ -66,7 +70,63 @@ export default function LoginPage() {
         return
       }
 
-      // On success, redirect to dashboard. If user opted to trust device, store a local marker after redirect flow.
+      const signedInUser = data?.user
+
+      if (!signedInUser || !signedInUser.email_confirmed_at) {
+        await supabaseClient.auth.signOut()
+        const { error: resendError } = await supabaseClient.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: `${window.location.origin}/verify?method=confirm&email=${encodeURIComponent(email)}` },
+        })
+
+        if (resendError) {
+          setFeedback({ type: 'error', message: 'Signed in but email not verified — failed to send verification email. Please contact support.' })
+        } else {
+          setFeedback({ type: 'success', message: 'Email not verified. A verification link was sent to your inbox.' })
+        }
+
+        setLoading(false)
+        return
+      }
+
+      // If the user requested to trust this device AND the password sign-in
+      // succeeded, trigger the device-trust verification email flow which will
+      // send an email containing the device token that the user must click to
+      // finish trusting the device for 30 days.
+      if (trustDevice && !deviceTrusted) {
+        // Create a pending device token server-side
+        const tokenResp = await fetch('/api/create-device-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        })
+        const tokenJson = await tokenResp.json()
+        if (!tokenResp.ok) {
+          setFeedback({ type: 'error', message: tokenJson?.error || 'Failed to initiate device verification.' })
+          setLoading(false)
+          return
+        }
+
+        // Use Supabase to email the device verification link to the user. The
+        // redirect contains the token so that when the user clicks it the
+        // server can confirm and mark the device trusted.
+        const redirectUrl = `${window.location.origin}/verify?method=device&device_id=${encodeURIComponent(tokenJson.device_id)}&token=${encodeURIComponent(tokenJson.token)}&email=${encodeURIComponent(email)}`
+        const { error: otpError } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } })
+        if (otpError) {
+          setFeedback({ type: 'error', message: otpError.message })
+        } else {
+          setFeedback({ type: 'success', message: 'Signed in. A confirmation email was sent to finish trusting this device.' })
+        }
+
+        // We don't immediately mark the device trusted — it will become trusted
+        // after the user clicks the link and the server marks the device and
+        // sets the cookie. For now we keep the user signed in and inform them.
+        router.replace('/dashboard')
+        setLoading(false)
+        return
+      }
+
+      // Standard verified password flow — user is signed in and verified
       router.replace('/dashboard')
     } catch (err: any) {
       setFeedback({ type: 'error', message: err?.message || 'Sign in failed' })
@@ -114,13 +174,14 @@ export default function LoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 className="mt-2 w-full rounded-md border border-white/10 bg-black/40 p-2.5 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-                required
+                // Only required when the user intends to sign in with password
+                required={trustDevice}
               />
             </div>
 
             <div className="flex items-center gap-2 text-sm">
               <input id="trust-device" type="checkbox" checked={trustDevice} onChange={(e) => setTrustDevice(e.target.checked)} className="h-4 w-4 rounded border-white/20 bg-black/40" />
-              <label htmlFor="trust-device" className="text-slate-300">Trust this device for 30 days (skip email verification)</label>
+              <label htmlFor="trust-device" className="text-slate-300">Trust this device for 30 days (required to sign-in with password)</label>
             </div>
             {feedback && (
               <p className={`text-sm ${feedback.type === 'error' ? 'text-rose-200' : 'text-emerald-200'} transition-all duration-300`}>{feedback.message}</p>
@@ -165,7 +226,9 @@ function MagicLinkButton({ email, setFeedback, supabaseClient, trustDevice }: { 
         }
         setSending(true)
         setFeedback(null)
-        const redirectUrl = `${window.location.origin}/dashboard${trustDevice ? '?trusted=1' : ''}`
+        // Send magic link to the new /verify route so the app can display a
+        // clear verification UX and avoid sending users to a nonexistent page.
+        const redirectUrl = `${window.location.origin}/verify?method=magic&email=${encodeURIComponent(email)}${trustDevice ? '&trusted=1' : ''}`
         const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } })
         setSending(false)
         if (error) {
@@ -194,8 +257,9 @@ function ResetPasswordButton({ email, setFeedback, supabaseClient }: { email: st
         }
         setSending(true)
         setFeedback(null)
+        // Redirect to /verify after password reset so user sees a confirmation
         const { error: resetError } = await supabaseClient.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/login`,
+          redirectTo: `${window.location.origin}/verify?method=reset&email=${encodeURIComponent(email)}`,
         })
         setSending(false)
         if (resetError) {

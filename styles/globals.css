@@ -3,14 +3,79 @@
 @tailwind utilities;
 /* Global UI helpers moved from pages/index.tsx to avoid styled-jsx parsing issues */
 .glass-card {
-	background: rgba(24, 28, 44, 0.32) !important;
-	box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1.5px 0 0 rgba(255,255,255,0.08);
-	backdrop-filter: blur(32px) saturate(180%);
-	-webkit-backdrop-filter: blur(32px) saturate(180%);
-	border-radius: 1.5rem;
-	border: 1.5px solid rgba(255,255,255,0.08);
-	transition: box-shadow 0.2s, background 0.2s;
+  position: relative;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(10,12,18,0.18));
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  overflow: hidden;
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms ease;
+  /* Create an isolated stacking context to make backdrop-filter more robust
+     across browsers/devtools and avoid accidental stacking/transform interactions. */
+  isolation: isolate;
+  background-clip: padding-box;
 }
+/* soft inner shadow for depth */
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 6px 30px rgba(0,0,0,0.45);
+  z-index: 0;
+}
+/* sheen layer that moves across like liquid */
+.glass-card::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -30%;
+  width: 160%;
+  height: 120%;
+  transform: rotate(10deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.0) 60%);
+  filter: blur(18px) saturate(120%);
+  mix-blend-mode: overlay;
+  opacity: 0.85;
+  z-index: 1;
+  transition: transform 800ms linear, opacity 260ms ease;
+}
+/* gentle sheen movement on hover / focus */
+.glass-card:hover::after, .glass-card:focus-within::after {
+  transform: translateX(6%) rotate(8deg);
+  opacity: 1;
+}
+/* a faint highlight streak */
+.glass-card .glass-streak {
+  position: absolute;
+  left: -20%;
+  top: -10%;
+  width: 40%;
+  height: 120%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  transform: skewX(-18deg);
+  filter: blur(8px);
+  opacity: 0.65;
+  pointer-events: none;
+  z-index: 2;
+}
+/* subtle pop on hover: move the inner content instead of the host element with backdrop-filter.
+   Transforms on the backdrop-filter host can trigger rendering bugs (blur disappearing) in some browsers/dev toolchains.
+*/
+.glass-card > * { transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms ease; }
+.glass-card:hover > * { transform: translateY(-6px); }
+.glass-card:hover { box-shadow: 0 16px 48px rgba(2,6,23,0.6); }
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-card::after, .glass-card:hover { transition: none !important; transform: none !important; }
+}
+
+/* Ensure content sits above the pseudo layers */
+.glass-card > * { position: relative; z-index: 3; }
+
 @keyframes lineAnim {
 	0% { stroke-dashoffset: 0; }
 	100% { stroke-dashoffset: 120; }
@@ -52,4 +117,238 @@
 @keyframes linesMove {
 	from { background-position: 0 0, 0 0; }
 	to { background-position: 480px 480px, -360px -360px; }
+}
+
+/* Enhanced glassmorphism variants */
+.glass-panel {
+   background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+   border: 1px solid rgba(255,255,255,0.06);
+   backdrop-filter: blur(36px) saturate(160%);
+   -webkit-backdrop-filter: blur(36px) saturate(160%);
+   box-shadow: 0 10px 40px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+   border-radius: 1.25rem;
+   isolation: isolate;
+   background-clip: padding-box;
+}
+
+/* Subtle inner glow for elevated panels */
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), inset 0 -8px 32px rgba(2,6,23,0.35);
+}
+
+/* Floating colorful blurred blobs used as background accents */
+.bg-blob {
+  position: absolute;
+  pointer-events: none;
+  filter: blur(96px) saturate(150%);
+  opacity: 0.32;
+  transform: translateZ(0);
+  mix-blend-mode: screen;
+}
+
+/* Two default blob sizes to reuse */
+.blob-lg { width: 540px; height: 540px; border-radius: 9999px; }
+.blob-md { width: 320px; height: 320px; border-radius: 9999px; }
+
+/* Animated drifting for blobs (subtle) */
+@keyframes drift {
+  0% { transform: translateY(0) translateX(0) scale(1); }
+  50% { transform: translateY(-28px) translateX(20px) scale(1.03); }
+  100% { transform: translateY(0) translateX(0) scale(1); }
+}
+.animate-drift { animation: drift 18s ease-in-out infinite; }
+
+/* Primary CTA styles (accessible focus & hover) */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 0.75rem 1.5rem; /* py-3 px-6 */
+  font-weight: 600; /* font-semibold */
+  color: #ffffff;
+  background-image: linear-gradient(90deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+  box-shadow: 0 8px 40px rgba(99,102,241,0.18);
+  transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+}
+.btn-primary:focus { outline: 3px solid rgba(99,102,241,0.18); outline-offset: 3px; }
+.btn-primary:hover { transform: translateY(-3px) scale(1.01); }
+
+/* Secondary button (subtle glass) */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 0.75rem 1.5rem; /* py-3 px-6 */
+  font-weight: 600; /* font-semibold */
+  color: rgba(255,255,255,0.9);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.btn-ghost:focus { outline: 3px solid rgba(255,255,255,0.04); outline-offset: 3px; }
+.btn-ghost:hover { transform: translateY(-2px); }
+
+/* Gradient headline utility for a modern look */
+.gradient-heading {
+  color: #ffffff; /* fallback for browsers that don't support background-clip */
+  background: linear-gradient(90deg, #FFFFFF 0%, #E9D5FF 40%, #A78BFA 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent; /* prefer transparent fill to show gradient when supported */
+  text-shadow: 0 2px 18px rgba(99,102,241,0.08);
+}
+
+/* Focus-visible helpers for keyboard users */
+.btn-primary:focus-visible, .btn-ghost:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.14), 0 8px 30px rgba(2,6,23,0.45);
+}
+
+/* Constrain motion on focus transforms when reduced motion is preferred */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:hover, .btn-ghost:hover { transform: none !important; }
+}
+
+/* Respect user preferences for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob, .animate-drift, .animate-fade-in, .linesMove, .animate-blob, .animate-pulse { animation: none !important; }
+}
+
+/* Improve contrast on smaller screens */
+@media (max-width: 640px) {
+  .glass-card, .glass-panel { background: rgba(18,20,30,0.48) !important; }
+}
+
+/* Small utility to add a faint outline ring for stacked glass elements */
+.glass-outline {
+  position: relative;
+}
+.glass-outline::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+  mask: linear-gradient(#000, #000);
+}
+
+/* Ensure the animated-lines background is muted on mobile */
+@media (max-width: 640px) {
+  .animated-lines { opacity: 0.25; filter: blur(6px); }
+}
+
+/* Topbar / header styles */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  background: linear-gradient(180deg, rgba(6,7,12,0.45), rgba(6,7,12,0.25));
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: padding 200ms ease, background-color 220ms ease, box-shadow 220ms ease;
+}
+.site-header.scrolled {
+  background: linear-gradient(180deg, rgba(4,6,12,0.7), rgba(4,6,12,0.6));
+  box-shadow: none;
+}
+.site-header { padding: 0.25rem 0; }
+.site-header.glass-card { overflow: visible; }
+.site-header .container { padding: 0.4rem 0.6rem; min-height: 48px; }
+.site-header .brand { display:flex; align-items:center; gap:0.75rem; }
+@media (min-width: 768px) {
+  .site-header .container { min-height: 56px; padding: 0.5rem 0.75rem; }
+}
+
+/* Brand larger */
+.site-header .brand .brand-title { font-size:1rem; font-weight:700; }
+.site-header.scrolled .brand .brand-title { font-size:1.05rem; }
+
+/* Brand / gamer text treatment */
+.brand-title { font-weight: 900; letter-spacing:-0.02em; display:inline-block; }
+.gamer-title {
+  font-size: 1.05rem; /* large display size */
+  background: linear-gradient(90deg, #FFFFFF 0%, #FFD7FF 35%, #8B5CF6 75%, #00E5FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 0.7px rgba(0,0,0,0.35);
+  text-shadow:
+    0 2px 8px rgba(139,92,246,0.16),
+    0 6px 24px rgba(0,0,0,0.55),
+    0 0 14px rgba(99,102,241,0.12);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+/* Larger logo container spacing */
+.site-header .brand img { display:block; }
+
+/* Performance: reduce heavy animations when scrolled to reduce CPU/GPU work */
+.reduce-anim .animated-lines { animation-play-state: paused; opacity: 0.25; filter: blur(4px); }
+.reduce-anim .glass-card::after { opacity: 0.6; transition: none; }
+.reduce-anim .glass-card { transition: none; }
+
+/* Hint to browser to promote animation-friendly elements to the GPU layer */
+/* Avoid applying translateZ(0) to .glass-card::after directly — transforms on the element that has backdrop-filter can cause the blur to stop rendering in some browsers or dev environments. */
+.animated-lines, .brand-title { will-change: transform, opacity; transform: translateZ(0); -webkit-transform: translateZ(0); }
+.glass-card::after { will-change: transform, opacity; }
+
+/* Backface visibility for smoother transforms */
+.glass-card, .glass-card::after { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+
+/* Accessibility: ensure reduced-motion disables sheen and heavy glows */
+@media (prefers-reduced-motion: reduce) {
+  .gamer-title { text-shadow: none; -webkit-text-stroke: 0.6px rgba(0,0,0,0.35); }
+  .glass-card::after { display: none !important; }
+}
+
+/* Remove header shadow (user requested) */
+.site-header.scrolled { box-shadow: none; }
+.site-header { box-shadow: none; }
+
+/* Desktop dropdown menu styling */
+.dropdown-menu {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  top: 100%;
+  min-width: 180px;
+  background: linear-gradient(180deg, rgba(12,14,22,0.9), rgba(8,10,12,0.85));
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 180ms ease;
+  z-index: 70;
+}
+.dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(8px); }
+.dropdown-menu ul { list-style: none; margin: 0; padding: 0; display:flex; flex-direction:column; gap:0.25rem; }
+.dropdown-item {
+  display: block; padding: 0.6rem 0.75rem; border-radius: 0.5rem; color: #e6edf3; text-decoration: none;
+}
+.dropdown-item:hover, .dropdown-item:focus { background: rgba(255,255,255,0.02); color: #fff; outline: none; }
+
+/* Ensure dropdown items are keyboard focusable */
+.dropdown-item:focus { box-shadow: 0 0 0 4px rgba(99,102,241,0.08); }
+/* Force sheen rule that respects user's reduced-motion preference: only apply when user permits animation */
+@media (prefers-reduced-motion: no-preference) {
+  .glass-card.force-sheen::after,
+  .glass-card.force-sheen::before {
+    display: block !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: transform 900ms linear, opacity 300ms ease !important;
+    will-change: transform, opacity !important;
+  }
+  .glass-card.force-sheen { -webkit-backdrop-filter: blur(18px) saturate(150%) !important; backdrop-filter: blur(18px) saturate(150%) !important; }
+  .liquid-glass.force-sheen::after { animation-play-state: running !important; opacity: 1 !important; }
 }

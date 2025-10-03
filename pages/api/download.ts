@@ -25,6 +25,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!profile) return res.status(403).json({ error: 'Profile not found' })
   if (profile.disabled) return res.status(403).json({ error: 'Account disabled' })
 
+  // Check global site settings for software lock
+  const { data: settings } = await supabaseAdmin.from('site_settings').select('key,value').in('key', ['software_locked','current_version'])
+  const lockedRow = (settings || []).find((s: any) => s.key === 'software_locked')
+  const currentVersionRow = (settings || []).find((s: any) => s.key === 'current_version')
+  const isLocked = !!(lockedRow?.value?.value)
+  const currentVersion = currentVersionRow?.value?.value || null
+  if (isLocked) {
+    // Soft-block downloads when the software is locked — include current version for client info
+    return res.status(503).json({ error: 'Software updates are temporarily locked by admin', currentVersion })
+  }
+
   // Calculate usage
   const { data: usageRows } = await supabaseAdmin.from('usage').select('amount').eq('profile_id', profile.id)
   const totalUsed = (usageRows || []).reduce((s: number, r: any) => s + (r.amount || 0), 0)
