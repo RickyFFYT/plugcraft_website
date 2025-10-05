@@ -24,6 +24,7 @@ export default function Layout({ children }: LayoutProps) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const menuCloseTimerRef = useRef<number | null>(null)
 
   const handleSignOut = async () => {
     try {
@@ -37,12 +38,19 @@ export default function Layout({ children }: LayoutProps) {
 
   // Toggle header 'scrolled' class when user scrolls a small amount and reduce heavy animations for performance
   useEffect(() => {
+    let ticking = false
     const onScroll = () => {
       const sc = window.scrollY > 8
-      setScrolled(sc)
-      // when page is scrolled, reduce large background animations to prevent jank
-      if (sc) document.body.classList.add('reduce-anim')
-      else document.body.classList.remove('reduce-anim')
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(sc)
+          // when page is scrolled, reduce large background animations to prevent jank
+          if (sc) document.body.classList.add('reduce-anim')
+          else document.body.classList.remove('reduce-anim')
+          ticking = false
+        })
+        ticking = true
+      }
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -95,7 +103,7 @@ export default function Layout({ children }: LayoutProps) {
             <Link href="/" className="flex items-center gap-2 md:gap-3" aria-label="Go to homepage">
               {/* Compact logo: smaller on all screens, better vertical alignment */}
               <Image
-                src="/assets/Ghosted_logo.png"
+                src="/assets/Ghosted_logo.png?v=2"
                 alt="Plugcraft"
                 width={48}
                 height={48}
@@ -110,8 +118,17 @@ export default function Layout({ children }: LayoutProps) {
           <div className="desktop-nav hidden md:flex justify-center items-center">
             <div
               className="relative"
-              onMouseEnter={() => setMenuOpen(true)}
-              onMouseLeave={() => setMenuOpen(false)}
+              onMouseEnter={() => {
+                if (menuCloseTimerRef.current) {
+                  window.clearTimeout(menuCloseTimerRef.current)
+                  menuCloseTimerRef.current = null
+                }
+                setMenuOpen(true)
+              }}
+              onMouseLeave={() => {
+                // Small delay to allow mouse transitions between button and dropdown
+                menuCloseTimerRef.current = window.setTimeout(() => setMenuOpen(false), 160)
+              }}
             >
               <button
                 id="menu-button"
@@ -119,12 +136,14 @@ export default function Layout({ children }: LayoutProps) {
                 aria-haspopup="true"
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen((s) => !s)}
+                onFocus={() => { if (menuCloseTimerRef.current) { clearTimeout(menuCloseTimerRef.current); menuCloseTimerRef.current = null } setMenuOpen(true) }}
+                onBlur={() => { menuCloseTimerRef.current = window.setTimeout(() => setMenuOpen(false), 160) }}
                 ref={(el) => { /* silent ref to avoid forwarding */ }}
               >
                 Menu
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
-              <div id="menu-dropdown" role="menu" className={`dropdown-menu ${menuOpen ? 'open' : ''}`} aria-labelledby="menu-button" ref={menuRef}>
+              <div id="menu-dropdown" role="menu" className={`dropdown-menu ${menuOpen ? 'open' : ''}`} aria-labelledby="menu-button" ref={menuRef} onMouseEnter={() => { if (menuCloseTimerRef.current) { clearTimeout(menuCloseTimerRef.current); menuCloseTimerRef.current = null } }} onMouseLeave={() => { menuCloseTimerRef.current = window.setTimeout(() => setMenuOpen(false), 160) }}>
                 <ul>
                   {navigation.map((item) => (
                     <li key={item.name} role="none">
@@ -154,7 +173,7 @@ export default function Layout({ children }: LayoutProps) {
                 <Link href="/login" className="hidden sm:inline-flex text-base font-medium text-slate-300 transition hover:text-white">
                   Log in
                 </Link>
-                <Link href="/signup" className="hidden sm:inline-flex inline-flex items-center rounded-md btn-primary">
+                <Link href="/signup" className="hidden sm:inline-flex items-center rounded-md btn-primary">
                   Get started
                 </Link>
               </>
@@ -162,39 +181,63 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Mobile hamburger */}
             <button
-              className="hamburger-btn md:hidden"
-              aria-label="Open menu"
+              className={`hamburger-btn md:hidden ${mobileOpen ? 'open' : ''}`}
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               aria-controls="mobile-menu"
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((s) => !s)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setMobileOpen((s) => !s) }}
             >
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <span className="bar" aria-hidden="true" />
+              <span className="bar" aria-hidden="true" />
+              <span className="bar" aria-hidden="true" />
             </button>
           </div>
         </div>
 
         {/* Mobile panel is controlled via client-side state (see component code below) */}
         <div id="mobile-menu" role="dialog" aria-modal={mobileOpen} className={`mobile-menu-panel ${mobileOpen ? 'open' : ''}`} aria-hidden={!mobileOpen}>
-          <ul>
-            {!user && (
-              <li>
-                <Link href="/signup" className="inline-flex items-center rounded-md btn-primary" onClick={() => setMobileOpen(false)}>Get started</Link>
-              </li>
-            )}
-          </ul>
-        </div>
+          <button className="mobile-close-btn" aria-label="Close menu" onClick={() => setMobileOpen(false)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setMobileOpen(false) }}>×</button>
+           <nav aria-label="Mobile menu">
+             <ul>
+               {navigation.map((item) => (
+                 <li key={item.href} className="mb-2">
+                   <Link href={item.href} className="block px-3 py-2 rounded-md text-slate-200 hover:bg-white/3" onClick={() => setMobileOpen(false)}>{item.name}</Link>
+                 </li>
+               ))}
+             </ul>
+             <div className="mt-4 border-t border-white/6 pt-4">
+               {!user ? (
+                 <div className="space-y-2">
+                   <Link href="/login" className="block w-full text-center rounded-md px-4 py-2 bg-white/5 text-white" onClick={() => setMobileOpen(false)}>Log in</Link>
+                   <Link href="/signup" className="block w-full text-center rounded-md px-4 py-2 btn-primary" onClick={() => setMobileOpen(false)}>Get started</Link>
+                 </div>
+               ) : (
+                 <div className="space-y-2">
+                   <Link href="/dashboard" className="block w-full text-center rounded-md px-4 py-2 bg-white/5 text-white" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+                   <button className="block w-full text-center rounded-md px-4 py-2 bg-white/5 text-white" onClick={() => { setMobileOpen(false); handleSignOut(); }}>Sign out</button>
+                 </div>
+               )}
+             </div>
+           </nav>
+         </div>
       </header>
       {/* end header */}
 
       <main className="flex-1">{children}</main>
 
       <footer className="site-footer border-t border-white/5 bg-black/30">
-        <div className="footer-inner mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2">
-            <Image src="/assets/dracarynlogo.png" alt="Dracaryn Studio Logo" width={96} height={48} className="w-24 h-auto md:w-28 object-contain block" style={{ width: 'auto', height: 'auto' }} />
-            <span>&copy; 2025 Dracaryn Studio. All rights reserved.</span>
+        <div className="footer-inner mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-sm text-slate-400">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/assets/dracarynlogo.png?v=2"
+              alt="Dracaryn Studio Logo"
+              width={96}
+              height={48}
+              className="w-20 h-auto object-contain block"
+              style={{ width: 'auto', height: 'auto' }}
+            />
+            <span className="text-xs sm:text-sm">&copy; 2025 Dracaryn Studio. All rights reserved.</span>
           </div>
           <div className="flex gap-4">
             <Link href="mailto:support@ghosted.gg" className="hover:text-white transition">

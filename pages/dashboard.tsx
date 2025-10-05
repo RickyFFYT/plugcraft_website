@@ -33,14 +33,15 @@ function DashboardContent() {
       try {
         // Defensive: user.id may be string or undefined
         if (!user.id) return
-        // Use 'user_id' IS NOT NULL if user_id is nullable in schema
-        const { data, error, status } = await supabaseClient
+        // Only fetch the user's display name client-side. Do NOT rely on client-side
+        // profile.is_admin or the admin_emails table for admin checks — use the
+        // server-side `/api/admin/check` endpoint instead (see below).
+        const { data, error } = await supabaseClient
           .from('profiles')
-          .select('full_name,is_admin')
+          .select('full_name')
           .eq('user_id', user.id)
           .maybeSingle()
         if (error) {
-          // Log error for debugging
           console.error('Failed to fetch profile name:', error.message)
           setProfileName('')
           return
@@ -49,23 +50,6 @@ function DashboardContent() {
           setProfileName(data.full_name)
         } else {
           setProfileName('')
-        }
-        // Determine admin locally first: profiles.is_admin OR admin_emails lookup (case-insensitive)
-        if (data?.is_admin) {
-          setIsAdmin(true)
-        } else if (user?.email) {
-          try {
-            const { data: adminEmailRow } = await supabaseClient.from('admin_emails').select('email').ilike('email', user.email).maybeSingle()
-            if (adminEmailRow) {
-              setIsAdmin(true)
-            } else {
-              setIsAdmin(false)
-            }
-          } catch (e) {
-            setIsAdmin(false)
-          }
-        } else {
-          setIsAdmin(false)
         }
       } catch (err) {
         console.error('Unexpected error fetching profile name:', err)
@@ -195,7 +179,7 @@ function DashboardContent() {
                ) : (
                  <ul className="space-y-3">
                    {announcementsList.map((a: any) => (
-                    <li key={a.id} className="p-4 bg-white/3 rounded-lg">
+                    <li key={a.id} className="p-4 rounded-lg">
                       <div className="text-lg font-semibold gradient-heading leading-tight">{a.title}</div>
                       <div className="mt-2 text-base text-slate-200 leading-relaxed">{a.body}</div>
                      </li>

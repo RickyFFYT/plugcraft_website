@@ -53,59 +53,21 @@ function AdminContent() {
     ;(async () => {
       setLoading(true)
       try {
-        // Try client-side checks first to avoid cached API 304s and speed up UX.
-        const userId = (session as any)?.user?.id
-        const userEmail = (session as any)?.user?.email
-        let foundAdmin = false
-
-        if (userId) {
-          try {
-            const { data: profileRow, error } = await supabase.from('profiles').select('is_admin').eq('user_id', userId).maybeSingle()
-            if (!error && profileRow?.is_admin) {
-              foundAdmin = true
-            }
-          } catch (e) {
-            // ignore
-          }
-        }
-
-        if (!foundAdmin && userEmail) {
-          try {
-            const { data: emailRow } = await supabase.from('admin_emails').select('email').eq('email', userEmail).maybeSingle()
-            if (emailRow) {
-              foundAdmin = true
-            }
-          } catch (e) {
-            // ignore
-          }
-        }
-
-        if (foundAdmin) {
-          // Use access token if available for later server calls; fall back to session retrieval
-          let token = (session as any)?.access_token
-          if (!token) {
-            const s = await supabase.auth.getSession()
-            token = (s as any)?.data?.session?.access_token
-          }
-          setIsAdmin(true)
-          setServerCheckWarning(null)
-          await loadAll(token || '')
-          return
-        }
-
-        // Client-side checks didn't confirm admin — call server endpoint without caching to get authoritative decision
+        // Authoritative server-side admin check. Always call server API rather than relying on
+        // client-side table queries to avoid exposing DB to the browser or depending on client keys.
         let token = (session as any)?.access_token
         if (!token) {
           const s = await supabase.auth.getSession()
           token = (s as any)?.data?.session?.access_token
         }
+
         const res = await fetch('/api/admin/check', { method: 'GET', cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
         const j = await res.json()
         if (!res.ok || !j.isAdmin) {
           setIsAdmin(false)
+          // In development show debug info; in prod just redirect to dashboard
           if (j?.debug && process.env.NODE_ENV !== 'production') {
             console.warn('Server admin check failed — debug:', j.debug)
-            // provide helpful info in dev for diagnostics and avoid blind redirect
             alert(`Admin check failed — debug info: ${JSON.stringify(j.debug)}`)
             return
           }
@@ -126,15 +88,15 @@ function AdminContent() {
 
   async function loadAll(token: string) {
     // Load all announcements (admin can see all)
-    const annRes = await fetch('/api/admin/announcements', { headers: { Authorization: `Bearer ${token}` } })
+    const annRes = await fetch('/api/admin/announcements', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
     const annJ = await annRes.json()
     if (annRes.ok) setAnnouncements(annJ.announcements || [])
 
-    const usersRes = await fetch('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } })
+    const usersRes = await fetch('/api/admin/users', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
     const usersJ = await usersRes.json()
     if (usersRes.ok) setUsers(usersJ.users || [])
 
-    const settingsRes = await fetch('/api/admin/settings', { headers: { Authorization: `Bearer ${token}` } })
+    const settingsRes = await fetch('/api/admin/settings', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
     const settingsJ = await settingsRes.json()
     if (settingsRes.ok) setSettings(settingsJ.settings || [])
   }

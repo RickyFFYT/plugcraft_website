@@ -6,6 +6,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Very small in-memory rate limiter to reduce enumeration abuse.
+// Note: For a production deployment in serverless environments this should be
+// replaced by a proper external rate limiter (Redis, etc.). This is best-effort.
+const RATE_LIMIT_MAP = new Map<string, { count: number; resetAt: number }>()
+
+const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
+const RATE_LIMIT_MAX = 20
+
 function parseCookieDevice(header?: string | string[] | undefined) {
   if (!header) return null
   // naive cookie parse for the trusted_device cookie
@@ -24,6 +32,25 @@ function parseCookieDevice(header?: string | string[] | undefined) {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
+
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+  try {
+    const now = Date.now()
+    const state = RATE_LIMIT_MAP.get(String(ip))
+    if (!state || state.resetAt < now) {
+      RATE_LIMIT_MAP.set(String(ip), { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
+    } else {
+      state.count += 1
+      RATE_LIMIT_MAP.set(String(ip), state)
+      if (state.count > RATE_LIMIT_MAX) {
+        res.setHeader('Retry-After', Math.ceil((state.resetAt - now) / 1000))
+        return res.status(429).json({ error: 'Too many requests' })
+      }
+    }
+  } catch (err) {
+    // proceed without rate-limiter if something unexpected occurs
+    console.error('Rate limiter error', err)
+  }
 
   const { email } = req.query as { email?: string }
   if (!email) return res.status(400).json({ error: 'Missing email' })

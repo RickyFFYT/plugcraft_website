@@ -7,7 +7,7 @@ export default function VerifyPage() {
   const router = useRouter()
   const supabaseClient = useSupabaseClient()
   const user = useUser()
-  const { method, email } = router.query as { method?: string; email?: string }
+  const { method } = router.query as { method?: string }
 
   const [message, setMessage] = useState('Processing...')
   const [error, setError] = useState<string | null>(null)
@@ -23,23 +23,23 @@ export default function VerifyPage() {
     // If we don't have a user, display contextual instructions depending on the
     // method used to arrive here (confirm from signup, magic link, reset, etc.).
     if (method === 'confirm') {
-      setMessage(`A verification link was sent to ${email || 'your email'}. Please check your inbox and follow the instructions to verify your account.`)
+      setMessage('A verification link was sent to your email. Please check your inbox and follow the instructions to verify your account.')
       return
     }
 
     if (method === 'magic') {
-      setMessage(`A magic sign-in link was sent to ${email || 'your email'}. If you clicked the link, you should be signed in automatically. If not, check the link or request a new one.`)
+      setMessage('A magic sign-in link was sent to your email. If you clicked the link, you should be signed in automatically. If not, check the link or request a new one.')
       return
     }
 
     if (method === 'reset') {
-      setMessage(`If an account exists for ${email || 'the provided email'}, a password reset link was sent. Check your inbox.`)
+      setMessage('If an account exists for the provided email, a password reset link was sent. Check your inbox.')
       return
     }
 
     // Generic fallback
     setMessage('If you just completed an action from your email, and you are not signed in, please try the link again or request a new one from the login page.')
-  }, [user, method, email, router])
+  }, [user, method, router])
 
   // If the query indicates device verification, and the user is signed in,
   // confirm the device server-side so the cookie is set.
@@ -76,7 +76,7 @@ export default function VerifyPage() {
     }
 
     tryConfirmDevice()
-  }, [user, method, email, router])
+  }, [user, method, router])
 
   // Provide an action to re-send a magic link if a user lands here without
   // being signed in and wants another email. This is intentionally rate
@@ -84,14 +84,10 @@ export default function VerifyPage() {
   // sending to avoid accidental duplicates.
   const [resending, setResending] = useState(false)
   const resendMagicLink = async () => {
-    if (!email) {
-      setError('No email provided to resend a link for. Please go back to login and enter your address.')
-      return
-    }
     setResending(true)
     setError(null)
-    const redirectUrl = `${window.location.origin}/verify?method=magic&email=${encodeURIComponent(email)}`
-    const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } })
+    const redirectUrl = `${window.location.origin}/verify?method=magic`
+    const { error } = await supabaseClient.auth.signInWithOtp({ email: router.query.email as string || '', options: { emailRedirectTo: redirectUrl } })
     setResending(false)
     if (error) setError(error.message)
     else setMessage('Magic link resent. Check your inbox.')

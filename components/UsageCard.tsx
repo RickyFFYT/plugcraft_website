@@ -87,13 +87,16 @@ export default function UsageCard() {
     try {
       console.debug('[UsageCard] fetchData start', { userId: user?.id })
       // Fetch the user's profile to get the profile_id and quota_limit
-      const { data: profileData, error: profileError } = await supabase
+      // Try to fetch a single profile. If multiple profiles exist (data integrity
+      // issue) prefer the first row to avoid throwing a JSON object error in the
+      // client. This keeps the UI resilient while you fix duplicates server-side.
+      const { data: profileDataRaw, error: profileError } = await supabase
         .from('profiles')
         .select('id, quota_limit')
         .eq('user_id', user!.id)
-        .maybeSingle()
+        .limit(1)
 
-      let activeProfile = profileData
+      let activeProfile = Array.isArray(profileDataRaw) ? profileDataRaw[0] : profileDataRaw
 
       // If profile doesn't exist, create one (upsert)
       if (profileError) {

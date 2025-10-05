@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useUser } from '@supabase/auth-helpers-react'
-// logos are in public/assets/
-const GhostedLogo = '/assets/Ghosted_logo.png'
-const SoftwareLogo = '/assets/software_logo.png'
-const DracarynLogo = '/assets/dracarynlogo.png'
+// Use public assets for logos
+const ASSET_VERSION = 'v2'
+const GhostedLogo = `/assets/Ghosted_logo.png?${ASSET_VERSION}`
+const SoftwareLogo = `/assets/software_logo.png?${ASSET_VERSION}`
+const DracarynLogo = `/assets/dracarynlogo.png?${ASSET_VERSION}`
 import bg from '../assets/background.png'
 
 const features = [
@@ -97,7 +98,7 @@ export default function Home() {
                 Experience seamless lag control with a beautiful UI, instant setup, and real-time control. Ghosted is built for gamers who want to focus on play — not configuration.
               </p>
 
-              <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="mt-8 flex flex-col-reverse sm:flex-row sm:items-center gap-4">
                 <Link
                   href={user ? '/dashboard' : '/signup'}
                   className="btn-primary"
@@ -106,11 +107,7 @@ export default function Home() {
                   {user ? 'Open dashboard' : 'Get Ghosted now'}
                 </Link>
 
-                <Link
-                  href={user ? '/login' : '#features'}
-                  className="btn-ghost"
-                  aria-label="Explore features"
-                >
+                <Link href={user ? '/login' : '#features'} className="btn-ghost" aria-label="Explore features">
                   Explore features
                 </Link>
               </div>
@@ -123,7 +120,7 @@ export default function Home() {
                 <div className="absolute -inset-6 transform rotate-3 rounded-2xl glass-panel opacity-60" aria-hidden="true" />
                 <div className="absolute -inset-10 transform -rotate-2 rounded-3xl bg-gradient-to-br from-black/40 to-transparent blur-3xl opacity-30" aria-hidden="true" />
 
-                <div className="relative glass-panel glass-outline p-4">
+                <div className="relative glass-panel glass-outline p-4 transform-gpu will-change-transform animate-fade-in-up">
                   <div className="rounded-xl overflow-hidden border border-white/6 shadow-2xl">
                     <Image
                       src={SoftwareLogo}
@@ -132,7 +129,7 @@ export default function Home() {
                       height={320}
                       sizes="(max-width: 768px) 100vw, 540px"
                       className="object-cover w-full h-auto"
-                      style={{ height: 'auto' }}
+                      style={{ height: 'auto', width: 'auto' }}
                       aria-hidden="false"
                     />
                   </div>
@@ -140,7 +137,7 @@ export default function Home() {
 
                 {/* Small badge/logo at the base */}
                 <div className="absolute -bottom-6 left-4 flex items-center gap-3">
-                  <Image src={GhostedLogo} alt="Ghosted logo" width={120} height={56} className="drop-shadow-lg" />
+                  <Image src={GhostedLogo} alt="Ghosted logo" width={120} height={56} className="drop-shadow-lg" style={{ width: 'auto', height: 'auto' }} />
                 </div>
               </div>
             </div>
@@ -231,7 +228,7 @@ export default function Home() {
             <span className="rounded-full border border-white/10 bg-white/5 px-4 py-1">Secure & Private</span>
           </div>
             <div className="mt-10 flex justify-center">
-            <Image src={DracarynLogo} alt="Dracaryn Studio Logo" width={96} height={48} />
+                  <Image src={DracarynLogo} alt="Dracaryn Studio Logo" width={96} height={48} style={{ width: 'auto', height: 'auto' }} priority />
           </div>
         </div>
       </section>
@@ -258,21 +255,11 @@ export default function Home() {
               Launch verified onboarding, usage visibility, and secure downloads today.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <a
-                href="https://discord.gg/dAUF4PyH"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center rounded-md bg-indigo-500 px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-indigo-400"
-              >
+              <a href="https://discord.gg/S7PsbJ2e" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md bg-indigo-500 px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-indigo-400">
                 Join Discord for Support & Purchase
               </a>
-              <a
-                href="https://discord.gg/dAUF4PyH"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center rounded-md border border-white/30 px-6 py-3 text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white"
-              >
-                Public Discord: dAUF4PyH
+              <a href="https://discord.gg/S7PsbJ2e" target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md border border-white/30 px-6 py-3 text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white">
+                Public Discord: S7PsbJ2e
               </a>
             </div>
       {/* Glassmorphism and animated lines CSS moved to globals.css */}

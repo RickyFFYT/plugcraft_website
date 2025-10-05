@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 
@@ -40,11 +41,8 @@ export default function LoginPage() {
 
       if (!trustDevice && !deviceTrusted) {
         // Not trusting device and device not previously verified: require magic link flow
-        const redirectUrl = `${window.location.origin}/verify?method=magic&email=${encodeURIComponent(email)}`
-        const { error } = await supabaseClient.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: redirectUrl },
-        })
+        const redirectUrl = `${window.location.origin}/verify?method=magic`
+        const { error } = await supabaseClient.auth.signInWithOtp({ email })
         if (error) {
           setFeedback({ type: 'error', message: error.message })
         } else {
@@ -74,10 +72,7 @@ export default function LoginPage() {
 
       if (!signedInUser || !signedInUser.email_confirmed_at) {
         await supabaseClient.auth.signOut()
-        const { error: resendError } = await supabaseClient.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: `${window.location.origin}/verify?method=confirm&email=${encodeURIComponent(email)}` },
-        })
+        const { error: resendError } = await supabaseClient.auth.signInWithOtp({ email })
 
         if (resendError) {
           setFeedback({ type: 'error', message: 'Signed in but email not verified — failed to send verification email. Please contact support.' })
@@ -110,8 +105,8 @@ export default function LoginPage() {
         // Use Supabase to email the device verification link to the user. The
         // redirect contains the token so that when the user clicks it the
         // server can confirm and mark the device trusted.
-        const redirectUrl = `${window.location.origin}/verify?method=device&device_id=${encodeURIComponent(tokenJson.device_id)}&token=${encodeURIComponent(tokenJson.token)}&email=${encodeURIComponent(email)}`
-        const { error: otpError } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } })
+        const redirectUrl = `${window.location.origin}/verify?method=device&device_id=${encodeURIComponent(tokenJson.device_id)}&token=${encodeURIComponent(tokenJson.token)}`
+        const { error: otpError } = await supabaseClient.auth.signInWithOtp({ email })
         if (otpError) {
           setFeedback({ type: 'error', message: otpError.message })
         } else {
@@ -141,10 +136,10 @@ export default function LoginPage() {
         <title>Log in | Ghosted</title>
       </Head>
       <div className="flex min-h-[calc(100vh-136px)] items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-indigo-500/20">
+  <div className="w-full max-w-md rounded-3xl glass-card force-sheen p-8 shadow-2xl border border-white/10">
           <div className="flex flex-col items-center gap-2 mb-4">
-            <img src={GhostedLogo} alt="Ghosted Logo" className="h-12" />
-            <img src={SoftwareLogo} alt="Ghosted Software Logo" className="h-8" />
+            <Image src={GhostedLogo} alt="Ghosted Logo" width={48} height={48} style={{ width: 'auto', height: 'auto' }} />
+            <Image src={SoftwareLogo} alt="Ghosted Software Logo" width={80} height={32} style={{ width: 'auto', height: 'auto' }} />
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white">Welcome back</h1>
@@ -162,6 +157,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-2 w-full rounded-md border border-white/10 bg-black/40 p-2.5 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 required
+                autoComplete="email"
               />
             </div>
             <div>
@@ -176,6 +172,7 @@ export default function LoginPage() {
                 className="mt-2 w-full rounded-md border border-white/10 bg-black/40 p-2.5 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 // Only required when the user intends to sign in with password
                 required={trustDevice}
+                autoComplete="current-password"
               />
             </div>
 
@@ -228,8 +225,8 @@ function MagicLinkButton({ email, setFeedback, supabaseClient, trustDevice }: { 
         setFeedback(null)
         // Send magic link to the new /verify route so the app can display a
         // clear verification UX and avoid sending users to a nonexistent page.
-        const redirectUrl = `${window.location.origin}/verify?method=magic&email=${encodeURIComponent(email)}${trustDevice ? '&trusted=1' : ''}`
-        const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } })
+        const redirectUrl = `${window.location.origin}/verify?method=magic${trustDevice ? '&trusted=1' : ''}`
+        const { error } = await supabaseClient.auth.signInWithOtp({ email })
         setSending(false)
         if (error) {
           setFeedback({ type: 'error', message: error.message })
@@ -259,7 +256,8 @@ function ResetPasswordButton({ email, setFeedback, supabaseClient }: { email: st
         setFeedback(null)
         // Redirect to /verify after password reset so user sees a confirmation
         const { error: resetError } = await supabaseClient.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/verify?method=reset&email=${encodeURIComponent(email)}`,
+          // Let Supabase use default redirect or configured project setting
+          redirectTo: undefined,
         })
         setSending(false)
         if (resetError) {

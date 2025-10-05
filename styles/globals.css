@@ -5,13 +5,13 @@
 .glass-card {
   position: relative;
   border-radius: 1rem;
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(10,12,18,0.18));
-  border: 1px solid rgba(255,255,255,0.06);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  background: linear-gradient(180deg, rgba(18,20,30,0.56), rgba(10,12,18,0.32));
+  border: 1px solid rgba(255,255,255,0.09);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
   overflow: hidden;
-  transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms ease;
+  transition: transform 240ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease;
   /* Create an isolated stacking context to make backdrop-filter more robust
      across browsers/devtools and avoid accidental stacking/transform interactions. */
   isolation: isolate;
@@ -24,7 +24,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 6px 30px rgba(0,0,0,0.45);
+  box-shadow: inset 0 6px 30px rgba(0,0,0,0.35);
   z-index: 0;
 }
 /* sheen layer that moves across like liquid */
@@ -36,17 +36,17 @@
   width: 160%;
   height: 120%;
   transform: rotate(10deg);
-  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.0) 60%);
-  filter: blur(18px) saturate(120%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.0) 60%);
+  filter: blur(10px) saturate(110%);
   mix-blend-mode: overlay;
-  opacity: 0.85;
+  opacity: 0.75;
   z-index: 1;
-  transition: transform 800ms linear, opacity 260ms ease;
+  transition: transform 420ms linear, opacity 220ms ease;
 }
 /* gentle sheen movement on hover / focus */
 .glass-card:hover::after, .glass-card:focus-within::after {
-  transform: translateX(6%) rotate(8deg);
-  opacity: 1;
+  transform: translateX(4%) rotate(8deg);
+  opacity: 0.9;
 }
 /* a faint highlight streak */
 .glass-card .glass-streak {
@@ -65,9 +65,9 @@
 /* subtle pop on hover: move the inner content instead of the host element with backdrop-filter.
    Transforms on the backdrop-filter host can trigger rendering bugs (blur disappearing) in some browsers/dev toolchains.
 */
-.glass-card > * { transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms ease; }
-.glass-card:hover > * { transform: translateY(-6px); }
-.glass-card:hover { box-shadow: 0 16px 48px rgba(2,6,23,0.6); }
+.glass-card > * { transition: transform 240ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease; }
+.glass-card:hover > * { transform: translateY(-4px); }
+.glass-card:hover { box-shadow: 0 10px 30px rgba(2,6,23,0.45); }
 
 @media (prefers-reduced-motion: reduce) {
   .glass-card::after, .glass-card:hover { transition: none !important; transform: none !important; }
@@ -82,14 +82,14 @@
 }
 
 @keyframes fade-in {
-	from { opacity: 0; transform: translateY(24px); }
+	from { opacity: 0; transform: translateY(18px); }
 	to { opacity: 1; transform: none; }
 }
 .animate-fade-in {
-	animation: fade-in 1s cubic-bezier(0.4,0,0.2,1) both;
+	animation: fade-in 760ms cubic-bezier(0.4,0,0.2,1) both;
 }
 .animate-fade-in-up {
-	animation: fade-in 1.2s cubic-bezier(0.4,0,0.2,1) both;
+	animation: fade-in 940ms cubic-bezier(0.4,0,0.2,1) both;
 }
 .delay-100 { animation-delay: 0.1s; }
 .delay-200 { animation-delay: 0.2s; }
@@ -99,11 +99,11 @@
 .delay-600 { animation-delay: 0.6s; }
 @keyframes blob {
 	0%,100% { transform: scale(1) translateY(0); }
-	33% { transform: scale(1.1,0.9) translateY(-10px); }
-	66% { transform: scale(0.95,1.05) translateY(10px); }
+	33% { transform: scale(1.05,0.98) translateY(-8px); }
+	66% { transform: scale(0.98,1.02) translateY(8px); }
 }
 .animate-blob {
-	animation: blob 12s infinite ease-in-out;
+	animation: blob 14s infinite ease-in-out;
 }
 .animate-pulse {
 	animation: pulse 2.5s cubic-bezier(0.4,0,0.6,1) infinite;
@@ -112,7 +112,7 @@
 .animated-lines {
 	background-image: repeating-linear-gradient(135deg, rgba(99,102,241,0.12) 0 2px, transparent 2px 12px), repeating-linear-gradient(135deg, rgba(162,28,175,0.08) 0 1px, transparent 1px 20px);
 	background-size: 240px 240px, 360px 360px;
-	animation: linesMove 12s linear infinite;
+	animation: linesMove 16s linear infinite;
 }
 @keyframes linesMove {
 	from { background-position: 0 0, 0 0; }
@@ -125,7 +125,7 @@
    border: 1px solid rgba(255,255,255,0.06);
    backdrop-filter: blur(36px) saturate(160%);
    -webkit-backdrop-filter: blur(36px) saturate(160%);
-   box-shadow: 0 10px 40px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+   box-shadow: 0 10px 40px rgba(2,6,23,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
    border-radius: 1.25rem;
    isolation: isolate;
    background-clip: padding-box;
@@ -138,15 +138,15 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), inset 0 -8px 32px rgba(2,6,23,0.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), inset 0 -6px 24px rgba(2,6,23,0.30);
 }
 
 /* Floating colorful blurred blobs used as background accents */
 .bg-blob {
   position: absolute;
   pointer-events: none;
-  filter: blur(96px) saturate(150%);
-  opacity: 0.32;
+  filter: blur(72px) saturate(140%);
+  opacity: 0.28;
   transform: translateZ(0);
   mix-blend-mode: screen;
 }
@@ -158,7 +158,7 @@
 /* Animated drifting for blobs (subtle) */
 @keyframes drift {
   0% { transform: translateY(0) translateX(0) scale(1); }
-  50% { transform: translateY(-28px) translateX(20px) scale(1.03); }
+  50% { transform: translateY(-22px) translateX(16px) scale(1.02); }
   100% { transform: translateY(0) translateX(0) scale(1); }
 }
 .animate-drift { animation: drift 18s ease-in-out infinite; }
@@ -169,15 +169,15 @@
   align-items: center;
   justify-content: center;
   border-radius: 0.5rem; /* rounded-lg */
-  padding: 0.75rem 1.5rem; /* py-3 px-6 */
+  padding: 0.72rem 1.4rem; /* py-3 px-6 */
   font-weight: 600; /* font-semibold */
   color: #ffffff;
   background-image: linear-gradient(90deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
-  box-shadow: 0 8px 40px rgba(99,102,241,0.18);
-  transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+  box-shadow: 0 8px 24px rgba(99,102,241,0.16);
+  transition: transform 180ms cubic-bezier(0.2,0.8,0.2,1), box-shadow 180ms ease, opacity 160ms ease;
 }
 .btn-primary:focus { outline: 3px solid rgba(99,102,241,0.18); outline-offset: 3px; }
-.btn-primary:hover { transform: translateY(-3px) scale(1.01); }
+.btn-primary:hover { transform: translateY(-2px) scale(1.005); }
 
 /* Secondary button (subtle glass) */
 .btn-ghost {
@@ -192,7 +192,7 @@
   border: 1px solid rgba(255,255,255,0.06);
 }
 .btn-ghost:focus { outline: 3px solid rgba(255,255,255,0.04); outline-offset: 3px; }
-.btn-ghost:hover { transform: translateY(-2px); }
+.btn-ghost:hover { transform: translateY(-1.5px); }
 
 /* Gradient headline utility for a modern look */
 .gradient-heading {
@@ -201,13 +201,13 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent; /* prefer transparent fill to show gradient when supported */
-  text-shadow: 0 2px 18px rgba(99,102,241,0.08);
+  text-shadow: 0 2px 18px rgba(99,102,241,0.06);
 }
 
 /* Focus-visible helpers for keyboard users */
 .btn-primary:focus-visible, .btn-ghost:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.14), 0 8px 30px rgba(2,6,23,0.45);
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.12), 0 8px 24px rgba(2,6,23,0.35);
 }
 
 /* Constrain motion on focus transforms when reduced motion is preferred */
@@ -222,7 +222,7 @@
 
 /* Improve contrast on smaller screens */
 @media (max-width: 640px) {
-  .glass-card, .glass-panel { background: rgba(18,20,30,0.48) !important; }
+  .glass-card, .glass-panel { background: rgba(18,20,30,0.56) !important; }
 }
 
 /* Small utility to add a faint outline ring for stacked glass elements */
@@ -267,6 +267,12 @@
   .site-header .container { min-height: 56px; padding: 0.5rem 0.75rem; }
 }
 
+/* Remove header shadow and heavy pseudo shadows — preserve only glass blur/border */
+.site-header { box-shadow: none; }
+.site-header.glass-card { box-shadow: none; }
+.site-header.glass-card::before { box-shadow: none; }
+.site-header.glass-card::after { display: none; }
+
 /* Brand larger */
 .site-header .brand .brand-title { font-size:1rem; font-weight:700; }
 .site-header.scrolled .brand .brand-title { font-size:1.05rem; }
@@ -281,9 +287,8 @@
   color: transparent;
   -webkit-text-stroke: 0.7px rgba(0,0,0,0.35);
   text-shadow:
-    0 2px 8px rgba(139,92,246,0.16),
-    0 6px 24px rgba(0,0,0,0.55),
-    0 0 14px rgba(99,102,241,0.12);
+    0 2px 6px rgba(139,92,246,0.12),
+    0 4px 12px rgba(0,0,0,0.45);
   transform: translateZ(0);
   will-change: transform, opacity;
 }
@@ -310,35 +315,31 @@
   .glass-card::after { display: none !important; }
 }
 
-/* Remove header shadow (user requested) */
-.site-header.scrolled { box-shadow: none; }
-.site-header { box-shadow: none; }
-
 /* Desktop dropdown menu styling */
 .dropdown-menu {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(12px);
+  transform: translateX(-50%) translateY(6px);
   top: 100%;
   min-width: 180px;
-  background: linear-gradient(180deg, rgba(12,14,22,0.9), rgba(8,10,12,0.85));
+  background: linear-gradient(180deg, rgba(12,14,22,0.95), rgba(8,10,12,0.92));
   border: 1px solid rgba(255,255,255,0.04);
   border-radius: 0.75rem;
   padding: 0.5rem;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 160ms ease, transform 180ms ease;
+  transition: opacity 140ms ease, transform 160ms ease;
   z-index: 70;
 }
-.dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(8px); }
-.dropdown-menu ul { list-style: none; margin: 0; padding: 0; display:flex; flex-direction:column; gap:0.25rem; }
+.dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(3px); }
+.dropdown-menu ul { list-style: none; margin: 0; padding: 0; display:flex; flex-direction:column; }
 .dropdown-item {
   display: block; padding: 0.6rem 0.75rem; border-radius: 0.5rem; color: #e6edf3; text-decoration: none;
 }
 .dropdown-item:hover, .dropdown-item:focus { background: rgba(255,255,255,0.02); color: #fff; outline: none; }
 
 /* Ensure dropdown items are keyboard focusable */
-.dropdown-item:focus { box-shadow: 0 0 0 4px rgba(99,102,241,0.08); }
+.dropdown-item:focus { box-shadow: 0 0 0 4px rgba(99,102,241,0.06); }
 /* Force sheen rule that respects user's reduced-motion preference: only apply when user permits animation */
 @media (prefers-reduced-motion: no-preference) {
   .glass-card.force-sheen::after,
@@ -346,9 +347,81 @@
     display: block !important;
     opacity: 1 !important;
     transform: none !important;
-    transition: transform 900ms linear, opacity 300ms ease !important;
+    transition: transform 640ms linear, opacity 260ms ease !important;
     will-change: transform, opacity !important;
   }
-  .glass-card.force-sheen { -webkit-backdrop-filter: blur(18px) saturate(150%) !important; backdrop-filter: blur(18px) saturate(150%) !important; }
+  /* Removed .glass-card.force-sheen override to preserve main glass-card blur */
   .liquid-glass.force-sheen::after { animation-play-state: running !important; opacity: 1 !important; }
+}
+
+/* Mobile panel (hidden on md+ unless explicitly open) */
+.mobile-menu-panel {
+  display: none; /* hidden by default on large screens */
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* ensure the top aligns with the header height; header uses 48-56px depending on viewport
+     keep 56px as a safe default and allow override via CSS variable if needed */
+  top: var(--site-header-top, 56px);
+  bottom: 0;
+  background: rgba(6,7,12,0.985); /* nearly solid to avoid 'invisible' look */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: 1rem 0.75rem;
+  z-index: 90; /* raised so it sits above header */
+  transform: translateY(-6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 220ms ease;
+  overflow-y: auto;
+}
+.mobile-menu-panel.open {
+  display: block;
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Close button inside mobile panel */
+.mobile-menu-panel .mobile-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
+  align-items: center;
+  justify-items: center;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Ensure the hamburger button renders above the mobile panel and floating elements */
+.hamburger-btn { z-index: 110; position: relative; }
+
+.mobile-menu-panel .mobile-close-btn:focus { outline: none; box-shadow: 0 0 0 4px rgba(99,102,241,0.08); }
+
+/* Mobile nav link styles */
+.mobile-menu-panel nav ul { list-style: none; margin: 0; padding: 1.2rem 0 0 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.mobile-menu-panel nav a { display: block; padding: 12px 14px; border-radius: 12px; color: #f8fafc; text-decoration: none; font-weight: 600; font-size: 17px; background: rgba(255,255,255,0.02); }
+.mobile-menu-panel nav a:hover, .mobile-menu-panel nav a:focus { background: rgba(255,255,255,0.035); color: #fff; }
+
+.mobile-menu-panel .mt-4 { padding: 16px 12px; }
+.mobile-menu-panel .btn-primary { display: block; width: 100%; text-align: center; padding: 12px; border-radius: 12px; }
+
+/* Slightly bolder hamburger contrast */
+.hamburger-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+.hamburger-btn.open { background: rgba(255,255,255,0.06); box-shadow: 0 6px 18px rgba(2,6,23,0.5); }
+.hamburger-btn .bar { background: linear-gradient(90deg, #fff, #eae6ff); }
+
+/* Ensure header sits above hero content and mobile panel is above header */
+.site-header { z-index: 80; }
+
+@media (min-width: 768px) {
+  .mobile-menu-panel { display: none !important; }
 }
