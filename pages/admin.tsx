@@ -49,10 +49,14 @@ function AdminContent() {
   const [activeTab, setActiveTab] = useState(tabs[0].id)
 
   useEffect(() => {
-    if (!session) return
+    if (!session) {
+      console.log('[AdminContent] No session, skipping admin check')
+      return
+    }
     ;(async () => {
       setLoading(true)
       try {
+        console.log('[AdminContent] Starting admin check with session:', session)
         // Authoritative server-side admin check. Always call server API rather than relying on
         // client-side table queries to avoid exposing DB to the browser or depending on client keys.
         let token = (session as any)?.access_token
@@ -60,9 +64,12 @@ function AdminContent() {
           const s = await supabase.auth.getSession()
           token = (s as any)?.data?.session?.access_token
         }
+        console.log('[AdminContent] Token extracted:', token ? 'YES (length=' + token.length + ')' : 'NO')
 
         const res = await fetch('/api/admin/check', { method: 'GET', cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
+        console.log('[AdminContent] /api/admin/check response status:', res.status)
         const j = await res.json()
+        console.log('[AdminContent] /api/admin/check response body:', j)
         if (!res.ok || !j.isAdmin) {
           setIsAdmin(false)
           // In development show debug info; in prod just redirect to dashboard
@@ -71,17 +78,21 @@ function AdminContent() {
             alert(`Admin check failed — debug info: ${JSON.stringify(j.debug)}`)
             return
           }
+          console.log('[AdminContent] Not admin, redirecting to /dashboard')
           window.location.href = '/dashboard'
           return
         }
 
+        console.log('[AdminContent] Admin check passed! Loading admin data...')
         setIsAdmin(true)
         setServerCheckWarning(null)
         await loadAll(token || '')
+        console.log('[AdminContent] Admin data loaded successfully')
       } catch (e) {
-        console.error(e)
+        console.error('[AdminContent] Error during admin check:', e)
       } finally {
         setLoading(false)
+        console.log('[AdminContent] Loading finished, isAdmin state updated')
       }
     })()
   }, [session])
@@ -171,7 +182,9 @@ function AdminContent() {
     }
   }
 
-  if (loading) return <div className="p-8">Loading admin panel...</div>
+  if (loading) return <div className="p-8 text-white">Loading admin panel...</div>
+
+  if (!isAdmin) return <div className="p-8 text-white">Checking admin access...</div>
 
   // handlers that call existing logic
   const handleEditAnnouncement = async (id: string, newBody: string) => {
@@ -225,42 +238,57 @@ function AdminContent() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
-      {serverCheckWarning && (
-        <div className="mt-4 p-3 rounded bg-yellow-900/40 border border-yellow-700 text-yellow-100">{serverCheckWarning}</div>
-      )}
-
-      <div className="mt-6">
-        <AdminTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
-
-        <div className="mt-6">
-          {activeTab === 'announcements' && (
-            <AdminAnnouncements
-              announcements={announcements}
-              newAnnouncement={newAnnouncement}
-              onChangeNew={(n) => setNewAnnouncement(n)}
-              onCreate={handleCreateAnnouncement}
-              onEdit={handleEditAnnouncement}
-              onDelete={handleDeleteAnnouncement}
-            />
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950/20 to-slate-950">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="admin-liquid-card mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-4">
+            <svg className="w-12 h-12 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            Admin Control Center
+          </h1>
+          <p className="text-lg text-slate-300">Manage users, content, and system settings with precision and elegance.</p>
+          {serverCheckWarning && (
+            <div className="mt-6 p-4 rounded-2xl bg-yellow-900/30 border border-yellow-700/50 text-yellow-100 flex items-center gap-3">
+              <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              {serverCheckWarning}
+            </div>
           )}
+        </div>
 
-          {activeTab === 'users' && (
-            <AdminUsers users={users} onAction={(a, id, extra) => performUserAction(a, id, extra)} />
-          )}
+        <div className="space-y-8">
+          <AdminTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
 
-          {activeTab === 'releases' && (
-            <AdminReleases settings={settings} onSave={async (v) => { try { await saveRelease(v) } catch (e) { console.error(e); alert('Save failed') } }} />
-          )}
+          <div className="transition-all duration-500 ease-out">
+            {activeTab === 'announcements' && (
+              <AdminAnnouncements
+                announcements={announcements}
+                newAnnouncement={newAnnouncement}
+                onChangeNew={(n) => setNewAnnouncement(n)}
+                onCreate={handleCreateAnnouncement}
+                onEdit={handleEditAnnouncement}
+                onDelete={handleDeleteAnnouncement}
+              />
+            )}
 
-          {activeTab === 'settings' && (
-            <AdminSettings settings={settings} onToggleLock={toggleLock} />
-          )}
+            {activeTab === 'users' && (
+              <AdminUsers users={users} onAction={(a, id, extra) => performUserAction(a, id, extra)} />
+            )}
 
-          {activeTab === 'quotas' && (
-            <AdminQuotas settings={settings} onSave={async (k, v) => { try { await saveSetting(k, v) } catch (e) { console.error(e); alert('Failed to save') } }} />
-          )}
+            {activeTab === 'releases' && (
+              <AdminReleases settings={settings} onSave={async (v) => { try { await saveRelease(v) } catch (e) { console.error(e); alert('Save failed') } }} />
+            )}
+
+            {activeTab === 'settings' && (
+              <AdminSettings settings={settings} onToggleLock={toggleLock} />
+            )}
+
+            {activeTab === 'quotas' && (
+              <AdminQuotas settings={settings} onSave={async (k, v) => { try { await saveSetting(k, v) } catch (e) { console.error(e); alert('Failed to save') } }} />
+            )}
+          </div>
         </div>
       </div>
     </div>

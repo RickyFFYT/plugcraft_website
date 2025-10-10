@@ -26,6 +26,8 @@ function DashboardContent() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
   const [announcementsList, setAnnouncementsList] = useState<any[]>([])
   const [latestRelease, setLatestRelease] = useState<any>(null)
+  const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(true)
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true)
 
   useEffect(() => {
     if (!user) return
@@ -95,12 +97,15 @@ function DashboardContent() {
   useEffect(() => {
     ;(async () => {
       try {
+        setIsLoadingAnnouncements(true)
         const res = await fetch('/api/admin/announcements')
         if (!res.ok) return
         const j = await res.json()
         setAnnouncementsList(j.announcements || [])
       } catch (e) {
         // ignore
+      } finally {
+        setIsLoadingAnnouncements(false)
       }
     })()
   }, [])
@@ -109,6 +114,7 @@ function DashboardContent() {
   useEffect(() => {
     ;(async () => {
       try {
+        setIsLoadingSettings(true)
         const res = await fetch('/api/admin/settings')
         if (!res.ok) return
         const j = await res.json()
@@ -116,6 +122,8 @@ function DashboardContent() {
         setLatestRelease(release?.value || null)
       } catch (e) {
         // ignore
+      } finally {
+        setIsLoadingSettings(false)
       }
     })()
   }, [])
@@ -166,7 +174,7 @@ function DashboardContent() {
                 className="inline-flex items-center justify-center rounded-lg btn-primary"
                 aria-label="Download latest build"
               >
-                Download latest build {latestRelease?.version ? `(${latestRelease.version})` : ''}
+                {isLoadingSettings ? 'Loading...' : `Download latest build ${latestRelease?.version ? `(${latestRelease.version})` : ''}`}
               </a>
             </div>
           </section>
@@ -174,7 +182,13 @@ function DashboardContent() {
           <section className="glass-card glass-panel liquid-glass force-sheen p-8 shadow-2xl border border-white/10 animate-fade-in-up delay-200" aria-labelledby="announcements-title">
             <h2 id="announcements-title" className="text-lg font-semibold text-white">Latest announcements</h2>
             <div className="mt-4">
-               {announcementsList.length === 0 ? (
+               {isLoadingAnnouncements ? (
+                 <div className="animate-pulse">
+                   <div className="h-4 bg-white/10 rounded mb-3"></div>
+                   <div className="h-4 bg-white/10 rounded mb-3 w-3/4"></div>
+                   <div className="h-4 bg-white/10 rounded w-1/2"></div>
+                 </div>
+               ) : announcementsList.length === 0 ? (
                 <p className="text-sm text-slate-300">No announcements</p>
                ) : (
                  <ul className="space-y-3">

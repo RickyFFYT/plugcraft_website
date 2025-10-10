@@ -2,20 +2,25 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
   throw new Error('Missing Supabase env vars for admin APIs')
 }
 
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+// Create a client with anon key for token validation
+const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 async function getAdminProfile(req: NextApiRequest) {
   const auth = req.headers.authorization || req.headers.Authorization
   if (!auth || typeof auth !== 'string') return null
   const token = auth.split(' ')[1]
   if (!token) return null
-  const { data, error } = await supabaseAdmin.auth.getUser(token)
+
+  // Use anon key client for token validation
+  const { data, error } = await supabaseAnon.auth.getUser(token)
   if (error || !data?.user) return null
   const user = data.user
 

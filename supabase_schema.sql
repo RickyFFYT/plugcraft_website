@@ -1,3 +1,10 @@
+-- Create admin_emails table for admin authentication
+create table if not exists public.admin_emails (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  created_at timestamptz default now()
+);
+
 -- Create profiles table linked to auth.users
 create table if not exists public.profiles (
   id uuid primary key default gen_random_uuid(),
@@ -6,6 +13,9 @@ create table if not exists public.profiles (
   is_admin boolean default false,
   quota_limit int default 100,
   disabled boolean default false,
+  banned_until timestamptz,
+  ban_reason text,
+  last_login timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -64,6 +74,12 @@ create policy "releases_admin_only" on public.releases
 
 alter table public.admin_audit enable row level security;
 create policy "admin_audit_admin_only" on public.admin_audit
+  for all
+  using (exists(select 1 from public.profiles p where p.user_id = auth.uid() and p.is_admin = true))
+  with check (exists(select 1 from public.profiles p where p.user_id = auth.uid() and p.is_admin = true));
+
+alter table public.admin_emails enable row level security;
+create policy "admin_emails_admin_only" on public.admin_emails
   for all
   using (exists(select 1 from public.profiles p where p.user_id = auth.uid() and p.is_admin = true))
   with check (exists(select 1 from public.profiles p where p.user_id = auth.uid() and p.is_admin = true));

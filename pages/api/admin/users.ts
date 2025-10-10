@@ -2,33 +2,110 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
   throw new Error('Missing Supabase env vars for admin APIs')
 }
 
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+// Create a client with anon key for token validation
+const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 async function getAdminProfile(req: NextApiRequest) {
   const auth = req.headers.authorization || req.headers.Authorization
   if (!auth || typeof auth !== 'string') return null
   const token = auth.split(' ')[1]
   if (!token) return null
-  const { data, error } = await supabaseAdmin.auth.getUser(token)
-  if (error || !data?.user) return null
-  const user = data.user
 
+  // Try to validate token with anon client first, then fall back to admin client
+  let user: any = null
+  try {
+    const { data } = await supabaseAnon.auth.getUser(token)
+    if (data?.user) user = data.user
+  } catch (err) {
+    // ignore
+  }
+  if (!user) {
+    try {
+      const { data } = await supabaseAdmin.auth.getUser(token)
+      if (data?.user) user = data.user
+    } catch (err) {
+      // ignore
+    }
+  }
+  if (!user) return null
+
+  // First check if user has a profile with is_admin = true
   const { data: profile } = await supabaseAdmin.from('profiles').select('id,is_admin').eq('user_id', user.id).maybeSingle()
   if (profile && profile.is_admin) return profile
 
+  // Check admin_emails table
   if (user.email) {
-    const { data: emailRow } = await supabaseAdmin.from('admin_emails').select('email').eq('email', user.email).maybeSingle()
-    if (emailRow) return profile || { id: null, is_admin: true }
+    // case-insensitive match
+    const { data: emailRow } = await supabaseAdmin.from('admin_emails').select('email').ilike('email', user.email).maybeSingle()
+    if (emailRow) {
+      // If user is in admin_emails, ensure they have a profile
+      if (!profile) {
+        // Create profile for admin user
+        const { data: newProfile, error: createError } = await supabaseAdmin
+          .from('profiles')
+          .insert([{ user_id: user.id, is_admin: true, full_name: user.user_metadata?.full_name || null }])
+          .select('id,is_admin')
+          .single()
+        if (createError) {
+          console.error('Failed to create admin profile:', createError)
+          return null
+        }
+        return newProfile
+      } else {
+        // Update existing profile to be admin
+        const { data: updatedProfile, error: updateError } = await supabaseAdmin
+          .from('profiles')
+          .update({ is_admin: true })
+          .eq('user_id', user.id)
+          .select('id,is_admin')
+          .single()
+        if (updateError) {
+          console.error('Failed to update admin profile:', updateError)
+          return null
+        }
+        return updatedProfile
+      }
+    }
   }
 
+  // Check admins table as fallback
   const { data: adminRow } = await supabaseAdmin.from('admins').select('id').eq('id', user.id).maybeSingle()
-  if (adminRow) return profile || { id: null, is_admin: true }
+  if (adminRow) {
+    if (!profile) {
+      // Create profile for admin user
+      const { data: newProfile, error: createError } = await supabaseAdmin
+        .from('profiles')
+        .insert([{ user_id: user.id, is_admin: true, full_name: user.user_metadata?.full_name || null }])
+        .select('id,is_admin')
+        .single()
+      if (createError) {
+        console.error('Failed to create admin profile:', createError)
+        return null
+      }
+      return newProfile
+    } else {
+      // Update existing profile to be admin
+      const { data: updatedProfile, error: updateError } = await supabaseAdmin
+        .from('profiles')
+        .update({ is_admin: true })
+        .eq('user_id', user.id)
+        .select('id,is_admin')
+        .single()
+      if (updateError) {
+        console.error('Failed to update admin profile:', updateError)
+        return null
+      }
+      return updatedProfile
+    }
+  }
 
   return null
 }
@@ -45,7 +122,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const users = usersResult.data.users || []
 
       // Fetch profiles for mapping
-      const { data: profiles } = await supabaseAdmin.from('profiles').select('user_id, full_name, is_admin, disabled, last_login, id, quota_limit')
+      const { data: profiles } = await supabaseAdmin.from('profiles').select('user_id, full_name, is_admin, disabled, last_login, id, quota_limit, banned_until, ban_reason')
 
       // Fetch usage window rows for profiles
       const profileIds = (profiles || []).map((p: any) => p.id).filter(Boolean)
@@ -90,14 +167,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!action || !target_user_id) return res.status(400).json({ error: 'Missing action or target_user_id' })
 
       if (action === 'ban') {
-        // Set disabled or banned_until in profiles
+        // Set banned_until in profiles
         // Ensure profile exists
         const { data: profileRow, error: pErr } = await supabaseAdmin.from('profiles').select('id').eq('user_id', target_user_id).maybeSingle()
         if (pErr) return res.status(500).json({ error: pErr.message })
         if (!profileRow) return res.status(404).json({ error: 'Profile not found' })
 
-        const updates: any = { disabled: true }
-        if (until) updates.banned_until = until
+        const updates: any = {}
+        if (until) {
+          updates.banned_until = until
+        } else {
+          // Permanent ban: set to far future
+          updates.banned_until = '9999-12-31T23:59:59Z'
+        }
         if (reason) updates.ban_reason = reason
 
         const { error: upErr } = await supabaseAdmin.from('profiles').update(updates).eq('user_id', target_user_id)

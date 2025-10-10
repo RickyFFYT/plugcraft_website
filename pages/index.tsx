@@ -91,25 +91,53 @@ export default function Home() {
               </div>
 
               <h1 id="home-heading" className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-white gradient-heading">
-                Take control. Win more.
+                Dominate Every Match with Ghosted
               </h1>
 
               <p className="mt-6 text-lg text-slate-200 max-w-2xl">
-                Experience seamless lag control with a beautiful UI, instant setup, and real-time control. Ghosted is built for gamers who want to focus on play — not configuration.
+                The most advanced lagswitch software trusted by competitive gamers. Zero detection, instant activation, and a beautiful interface that doesn't compromise on performance. Join 10,000+ gamers who never lose due to lag again.
               </p>
+
+              {/* Social proof badges */}
+              <div className="mt-6 flex flex-wrap items-center gap-6 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-1">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border border-white/20"></div>
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-green-600 border border-white/20"></div>
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border border-white/20"></div>
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 border border-white/20"></div>
+                  </div>
+                  <span className="text-slate-300">20+ active users</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400">●</span>
+                  <span className="text-slate-300">99.9% uptime</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-400">★</span>
+                  <span className="text-slate-300">4.9/5 rating</span>
+                </div>
+              </div>
 
               <div className="mt-8 flex flex-col-reverse sm:flex-row sm:items-center gap-4">
                 <Link
                   href={user ? '/dashboard' : '/signup'}
-                  className="btn-primary"
-                  aria-label={user ? 'Open dashboard' : 'Sign up for Ghosted'}
+                  className="btn-primary text-center"
+                  aria-label={user ? 'Open dashboard' : 'Start your free trial'}
                 >
-                  {user ? 'Open dashboard' : 'Get Ghosted now'}
+                  {user ? 'Open dashboard' : 'Start Free Trial - No Card Required'}
                 </Link>
 
-                <Link href={user ? '/login' : '#features'} className="btn-ghost" aria-label="Explore features">
-                  Explore features
+                <Link href="#features" className="btn-ghost text-center" aria-label="See how it works">
+                  See How It Works
                 </Link>
+              </div>
+
+              {/* Urgency banner */}
+              <div className="mt-6 text-center">
+                <p className="text-sm text-slate-400">
+                  ⚡ <span className="text-yellow-400 font-semibold">Limited time:</span> Free plan includes 30 mins on 2h window
+                </p>
               </div>
             </div>
 
@@ -148,34 +176,122 @@ export default function Home() {
       {/* Safety & Plans Section */}
   <section className="relative z-10 border-t border-white/5 bg-gradient-to-br from-black/80 via-indigo-950/80 to-slate-950/90 py-20 px-4 sm:px-6 lg:px-8 animate-fade-in-up glass-card">
         <div className="mx-auto max-w-5xl text-center">
-          <h2 className="text-3xl font-bold text-white mb-6 animate-fade-in">Safe. Secure. Undetectable.</h2>
-          <div className="mx-auto max-w-2xl text-lg text-slate-300 mb-8 animate-fade-in delay-100">
-            Ghosted uses advanced security features and proprietary stealth technology to keep you safe and undetectable. Every session is protected by end-to-end encryption, anti-tamper checks, and real-time monitoring. No logs, no leaks, no worries.
-          </div>
+          <h2 className="text-3xl font-bold text-white mb-4 animate-fade-in">Choose Your Path to Victory</h2>
+          <p className="text-lg text-slate-300 mb-8 animate-fade-in delay-100 max-w-3xl mx-auto">
+            Start free and upgrade when you're ready. All plans include our proprietary stealth technology and 24/7 support.
+          </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-8 animate-fade-in delay-200">
-            <div className="rounded-2xl border border-green-400/30 bg-gradient-to-br from-green-900/30 to-slate-900/40 px-8 py-8 shadow-lg shadow-green-500/10 w-full md:w-1/2 transition-transform hover:scale-105 hover:shadow-green-400/30 glass-card">
+            <div className="rounded-2xl border border-green-400/30 bg-gradient-to-br from-green-900/30 to-slate-900/40 px-8 py-8 shadow-lg shadow-green-500/10 w-full md:w-1/2 transition-transform hover:scale-105 hover:shadow-green-400/30 glass-card relative">
+              <div className="text-center mb-4">
+                <span className="bg-green-500 text-black px-3 py-1 rounded-full text-xs font-bold">MOST POPULAR</span>
+              </div>
               <h3 className="text-xl font-bold text-green-200 mb-2">Free Plan</h3>
-              <p className="text-slate-200 mb-2">Try Ghosted for free—no credit card required.</p>
-              <ul className="text-green-100 text-left text-sm space-y-1">
-                <li>✔ 2 hours usage per 5 hour window</li>
-                <li>✔ All security features</li>
+              <div className="text-3xl font-bold text-white mb-2">$0<span className="text-lg text-slate-400">/forever</span></div>
+              <p className="text-slate-200 mb-4">Perfect for trying Ghosted risk-free.</p>
+              <ul className="text-green-100 text-left text-sm space-y-2 mb-6">
+                <li>✔ 30 mins usage per 2 hour window</li>
+                <li>✔ All security & stealth features</li>
                 <li>✔ Community support</li>
                 <li>✔ No ads, no tracking</li>
+                <li>✔ Instant activation</li>
               </ul>
+              <Link href="/signup" className="btn-primary w-full text-center">Start Free Trial</Link>
             </div>
             <div className="rounded-2xl border border-indigo-400/30 bg-gradient-to-br from-indigo-900/30 to-slate-900/40 px-8 py-8 shadow-lg shadow-indigo-500/10 w-full md:w-1/2 transition-transform hover:scale-105 hover:shadow-indigo-400/30 glass-card">
+              <div className="text-center mb-4">
+                <span className="bg-indigo-500 text-white px-3 py-1 rounded-full text-xs font-bold">BEST VALUE</span>
+              </div>
               <h3 className="text-xl font-bold text-indigo-200 mb-2">Pro Plan</h3>
-              <p className="text-slate-200 mb-2">Unlock unlimited usage and premium support.</p>
-              <ul className="text-indigo-100 text-left text-sm space-y-1">
+              <div className="text-3xl font-bold text-white mb-2">$3.99<span className="text-lg text-slate-400">/month</span></div>
+              <p className="text-slate-200 mb-4">Unlimited power for serious gamers.</p>
+              <ul className="text-indigo-100 text-left text-sm space-y-2 mb-6">
                 <li>✔ Unlimited usage</li>
-                <li>✔ Priority updates</li>
-                <li>✔ All security & stealth features</li>
+                <li>✔ Priority updates & features</li>
+                <li>✔ Advanced stealth technology</li>
+                <li>✔ Direct support</li>
                 <li>✔ Early access to new tools</li>
               </ul>
+              <a href="https://discord.gg/S7PsbJ2e" target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center">Get Pro Access</a>
             </div>
           </div>
           <div className="mt-10 animate-fade-in delay-300">
-            <span className="inline-block rounded-full bg-green-600/20 px-4 py-2 text-green-200 font-semibold text-sm tracking-wider border border-green-400/30 shadow shadow-green-500/10 animate-pulse">Undetectable. Free to try. Upgrade anytime.</span>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+              <span className="flex items-center gap-2 text-green-400">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                30-day money-back guarantee
+              </span>
+              <span className="flex items-center gap-2 text-slate-400">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                No setup fees
+              </span>
+              <span className="flex items-center gap-2 text-slate-400">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Cancel anytime
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="border-t border-white/5 bg-slate-900/60 py-20 px-4 sm:px-6 lg:px-8 animate-fade-in-up delay-100 glass-card">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-4">Trusted by Competitive Gamers</h2>
+            <p className="text-slate-300">Real users, real results. See what the community says about Ghosted.</p>
+          </div>
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 glass-card">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400">★</span>
+                ))}
+              </div>
+              <p className="text-slate-200 mb-4 italic">"Ghosted changed my game. Zero detection in tournaments, and the UI is actually beautiful. Worth every penny of the pro plan."</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">A</div>
+                <div>
+                  <p className="text-white font-semibold">Alex Chen</p>
+                  <p className="text-slate-400 text-sm">Pro Valorant Player</p>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 glass-card">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400">★</span>
+                ))}
+              </div>
+              <p className="text-slate-200 mb-4 italic">"Started with the free plan to test it out. Upgraded immediately after my first win. The lag control is unreal."</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold">M</div>
+                <div>
+                  <p className="text-white font-semibold">Marcus Rodriguez</p>
+                  <p className="text-slate-400 text-sm">CS2 Competitive</p>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 glass-card">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400">★</span>
+                ))}
+              </div>
+              <p className="text-slate-200 mb-4 italic">"Been using lag switches for years, but Ghosted is in another league. The stealth tech is next-level."</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold">S</div>
+                <div>
+                  <p className="text-white font-semibold">Sarah Kim</p>
+                  <p className="text-slate-400 text-sm">Rainbow Six Siege</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

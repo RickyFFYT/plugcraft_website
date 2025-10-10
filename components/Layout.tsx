@@ -116,45 +116,13 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Desktop dropdown menu to keep header compact */}
           <div className="desktop-nav hidden md:flex justify-center items-center">
-            <div
-              className="relative"
-              onMouseEnter={() => {
-                if (menuCloseTimerRef.current) {
-                  window.clearTimeout(menuCloseTimerRef.current)
-                  menuCloseTimerRef.current = null
-                }
-                setMenuOpen(true)
-              }}
-              onMouseLeave={() => {
-                // Small delay to allow mouse transitions between button and dropdown
-                menuCloseTimerRef.current = window.setTimeout(() => setMenuOpen(false), 160)
-              }}
-            >
-              <button
-                id="menu-button"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white transition"
-                aria-haspopup="true"
-                aria-expanded={menuOpen}
-                onClick={() => setMenuOpen((s) => !s)}
-                onFocus={() => { if (menuCloseTimerRef.current) { clearTimeout(menuCloseTimerRef.current); menuCloseTimerRef.current = null } setMenuOpen(true) }}
-                onBlur={() => { menuCloseTimerRef.current = window.setTimeout(() => setMenuOpen(false), 160) }}
-                ref={(el) => { /* silent ref to avoid forwarding */ }}
-              >
-                Menu
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-              <div id="menu-dropdown" role="menu" className={`dropdown-menu ${menuOpen ? 'open' : ''}`} aria-labelledby="menu-button" ref={menuRef} onMouseEnter={() => { if (menuCloseTimerRef.current) { clearTimeout(menuCloseTimerRef.current); menuCloseTimerRef.current = null } }} onMouseLeave={() => { menuCloseTimerRef.current = window.setTimeout(() => setMenuOpen(false), 160) }}>
-                <ul>
-                  {navigation.map((item) => (
-                    <li key={item.name} role="none">
-                      <Link href={item.href} role="menuitem" className="dropdown-item" onClick={() => setMenuOpen(false)}>
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            <nav className="flex gap-2">
+              {navigation.map((item) => (
+                <Link key={item.name} href={item.href} className="nav-link" tabIndex={0}>
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
           </div>
 
           {/* Actions & mobile toggle aligned right */}
@@ -224,7 +192,7 @@ export default function Layout({ children }: LayoutProps) {
       </header>
       {/* end header */}
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1" style={{ paddingTop: '80px' }}>{children}</main>
 
       <footer className="site-footer border-t border-white/5 bg-black/30">
         <div className="footer-inner mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-sm text-slate-400">
