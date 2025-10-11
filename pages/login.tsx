@@ -139,8 +139,14 @@ export default function LoginPage() {
       <div className="flex min-h-[calc(100vh-136px)] items-center justify-center px-4 py-10">
   <div className="w-full max-w-md rounded-3xl glass-card force-sheen p-8 shadow-2xl border border-white/10">
           <div className="flex flex-col items-center gap-2 mb-4">
-            <Image src={GhostedLogo} alt="Ghosted Logo" width={48} height={48} style={{ width: 'auto', height: 'auto' }} />
-            <Image src={SoftwareLogo} alt="Ghosted Software Logo" width={80} height={32} style={{ width: 'auto', height: 'auto' }} />
+            <div className="flex flex-row items-center justify-center gap-4 w-full mb-2 md:mb-4">
+              <Image src={GhostedLogo} alt="Ghosted Logo" width={56} height={56} className="rounded-lg shadow-md" style={{ width: '56px', height: '56px' }} />
+              <span className="hidden md:inline-block w-px h-10 bg-gradient-to-b from-indigo-400/60 to-fuchsia-400/60 mx-2" />
+              <Image src={SoftwareLogo} alt="Software Logo" width={100} height={40} className="rounded-md shadow" style={{ width: '100px', height: '40px' }} />
+            </div>
+            <div className="flex flex-col md:hidden items-center w-full mb-2">
+              <span className="w-full h-px bg-gradient-to-r from-indigo-400/40 to-fuchsia-400/40 my-2" />
+            </div>
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white">Welcome back</h1>

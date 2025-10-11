@@ -13,7 +13,7 @@ interface AdminTabsProps {
 
 export default function AdminTabs({ tabs, active, onChange }: AdminTabsProps) {
   return (
-    <div className="admin-liquid-tabs">
+  <div className="glass-panel">
       <nav className="flex flex-wrap gap-3 justify-center" aria-label="Admin sections">
         {tabs.map((t) => (
           <button
