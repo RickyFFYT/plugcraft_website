@@ -2,7 +2,10 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+// Use NEXT_PUBLIC_SITE_URL if available, otherwise use VERCEL_URL or fallback to localhost
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL 
+	|| (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
 if (!supabaseUrl || !supabaseUrl.startsWith('http')) {
 	throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL. Did you populate .env.local and restart the dev server?')
@@ -10,10 +13,6 @@ if (!supabaseUrl || !supabaseUrl.startsWith('http')) {
 
 if (!supabaseAnonKey) {
 	throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY. Did you populate .env.local and restart the dev server?')
-}
-
-if (!siteUrl) {
-	throw new Error('Missing NEXT_PUBLIC_SITE_URL. Did you populate .env.local and restart the dev server?')
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
