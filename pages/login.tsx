@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+import { getAuthRedirectUrl } from '../lib/supabase'
 
 // Use public assets for logos
 const GhostedLogo = '/assets/Ghosted_logo.png'
@@ -41,7 +42,7 @@ export default function LoginPage() {
 
       if (!trustDevice && !deviceTrusted) {
         // Not trusting device and device not previously verified: require magic link flow
-        const redirectUrl = `${window.location.origin}/verify?method=magic`
+        const redirectUrl = getAuthRedirectUrl('/verify?method=magic')
         const { error } = await supabaseClient.auth.signInWithOtp({ email })
         if (error) {
           setFeedback({ type: 'error', message: error.message })
@@ -105,7 +106,7 @@ export default function LoginPage() {
         // Use Supabase to email the device verification link to the user. The
         // redirect contains the token so that when the user clicks it the
         // server can confirm and mark the device trusted.
-        const redirectUrl = `${window.location.origin}/verify?method=device&device_id=${encodeURIComponent(tokenJson.device_id)}&token=${encodeURIComponent(tokenJson.token)}`
+        const redirectUrl = getAuthRedirectUrl(`/verify?method=device&device_id=${encodeURIComponent(tokenJson.device_id)}&token=${encodeURIComponent(tokenJson.token)}`)
         const { error: otpError } = await supabaseClient.auth.signInWithOtp({ email })
         if (otpError) {
           setFeedback({ type: 'error', message: otpError.message })
@@ -225,7 +226,7 @@ function MagicLinkButton({ email, setFeedback, supabaseClient, trustDevice }: { 
         setFeedback(null)
         // Send magic link to the new /verify route so the app can display a
         // clear verification UX and avoid sending users to a nonexistent page.
-        const redirectUrl = `${window.location.origin}/verify?method=magic${trustDevice ? '&trusted=1' : ''}`
+        const redirectUrl = getAuthRedirectUrl(`/verify?method=magic${trustDevice ? '&trusted=1' : ''}`)
         const { error } = await supabaseClient.auth.signInWithOtp({ email })
         setSending(false)
         if (error) {

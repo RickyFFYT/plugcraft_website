@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react'
+import { getAuthRedirectUrl } from '../lib/supabase'
 
 export default function VerifyPage() {
   const router = useRouter()
@@ -86,7 +87,7 @@ export default function VerifyPage() {
   const resendMagicLink = async () => {
     setResending(true)
     setError(null)
-    const redirectUrl = `${window.location.origin}/verify?method=magic`
+    const redirectUrl = getAuthRedirectUrl('/verify?method=magic')
     const { error } = await supabaseClient.auth.signInWithOtp({ email: router.query.email as string || '', options: { emailRedirectTo: redirectUrl } })
     setResending(false)
     if (error) setError(error.message)

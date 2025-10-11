@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, getAuthRedirectUrl } from '../lib/supabase'
 
 interface AuthFormProps {
   type: 'login' | 'signup'
@@ -44,7 +44,7 @@ export default function AuthForm({ type }: AuthFormProps) {
 
       if (type === 'signup') {
         // Use redirectTo for verification and avoid embedding the user's email in the URL
-        const redirect = `${window.location.origin}/verify?method=confirm`
+        const redirect = getAuthRedirectUrl('/verify?method=confirm')
 
         const { data, error } = await supabase.auth.signUp({
           email: trimmedEmail,
