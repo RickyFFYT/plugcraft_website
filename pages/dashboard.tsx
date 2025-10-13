@@ -26,6 +26,7 @@ function DashboardContent() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
   const [announcementsList, setAnnouncementsList] = useState<any[]>([])
   const [latestRelease, setLatestRelease] = useState<any>(null)
+  const [discordLink, setDiscordLink] = useState<string | null>(null)
   const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(true)
   const [isLoadingSettings, setIsLoadingSettings] = useState(true)
 
@@ -118,8 +119,11 @@ function DashboardContent() {
         const res = await fetch('/api/admin/settings')
         if (!res.ok) return
         const j = await res.json()
-        const release = (j.settings || []).find((s: any) => s.key === 'latest_release')
-        setLatestRelease(release?.value || null)
+  const release = (j.settings || []).find((s: any) => s.key === 'latest_release')
+  setLatestRelease(release?.value || null)
+  const d = (j.settings || []).find((s: any) => s.key === 'discord_link')
+  const dv = d?.value || d?.value?.value || null
+  setDiscordLink(dv)
       } catch (e) {
         // ignore
       } finally {
@@ -225,6 +229,16 @@ function DashboardContent() {
               <a href="mailto:support@plugcraft.io" className="mt-3 inline-flex text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 Contact support →
               </a>
+            </div>
+          </section>
+          <section className="glass-card glass-panel p-6 shadow-2xl border border-white/10 text-sm text-slate-300">
+            <div className="animate-fade-in-up">
+              <h2 className="text-lg font-semibold text-white">Join our Discord</h2>
+              <p className="mt-2 text-slate-300">For support, purchases, and community — join our official Discord server.</p>
+              <div className="mt-4 flex gap-3">
+                <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center px-4 py-2 rounded-md">Join Discord</a>
+                <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-ghost inline-flex items-center px-4 py-2 rounded-md">{discordLink ? (() => { try { return new URL(discordLink).pathname.replace('/', '') } catch { return 'Discord' } })() : 'S7PsbJ2e'}</a>
+              </div>
             </div>
           </section>
         </div>

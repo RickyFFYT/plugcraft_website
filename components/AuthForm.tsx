@@ -44,13 +44,13 @@ export default function AuthForm({ type }: AuthFormProps) {
 
       if (type === 'signup') {
         // Use redirectTo for verification and avoid embedding the user's email in the URL
-        const redirect = getAuthRedirectUrl('/verify?method=confirm')
+          const redirect = getAuthRedirectUrl('/verify?method=confirm')
 
-        const { data, error } = await supabase.auth.signUp({
-          email: trimmedEmail,
-          password,
-          options: { data: { full_name: trimmedName } },
-        })
+          const { data, error } = await supabase.auth.signUp({
+            email: trimmedEmail,
+            password,
+            options: { emailRedirectTo: redirect, data: { full_name: trimmedName } },
+          })
 
         if (error) {
           setFeedback({ type: 'error', message: error.message })
@@ -65,7 +65,7 @@ export default function AuthForm({ type }: AuthFormProps) {
         } else if (!data?.user || !isEmailVerified(data.user)) {
           // If email not confirmed, sign out and send a verification/magic link.
           await supabase.auth.signOut()
-          await supabase.auth.signInWithOtp({ email: trimmedEmail })
+          await supabase.auth.signInWithOtp({ email: trimmedEmail, options: { emailRedirectTo: getAuthRedirectUrl('/verify?method=confirm') } })
           setFeedback({ type: 'error', message: 'Email not verified. A verification link has been sent to your email address.' })
         } else {
           setFeedback({ type: 'success', message: 'Signed in successfully.' })

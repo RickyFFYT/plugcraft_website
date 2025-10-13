@@ -43,7 +43,7 @@ export default function LoginPage() {
       if (!trustDevice && !deviceTrusted) {
         // Not trusting device and device not previously verified: require magic link flow
         const redirectUrl = getAuthRedirectUrl('/verify?method=magic')
-        const { error } = await supabaseClient.auth.signInWithOtp({ email })
+        const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } })
         if (error) {
           setFeedback({ type: 'error', message: error.message })
         } else {
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
       if (!signedInUser || !signedInUser.email_confirmed_at) {
         await supabaseClient.auth.signOut()
-        const { error: resendError } = await supabaseClient.auth.signInWithOtp({ email })
+        const { error: resendError } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: getAuthRedirectUrl('/verify?method=confirm') } })
 
         if (resendError) {
           setFeedback({ type: 'error', message: 'Signed in but email not verified — failed to send verification email. Please contact support.' })
@@ -106,8 +106,8 @@ export default function LoginPage() {
         // Use Supabase to email the device verification link to the user. The
         // redirect contains the token so that when the user clicks it the
         // server can confirm and mark the device trusted.
-        const redirectUrl = getAuthRedirectUrl(`/verify?method=device&device_id=${encodeURIComponent(tokenJson.device_id)}&token=${encodeURIComponent(tokenJson.token)}`)
-        const { error: otpError } = await supabaseClient.auth.signInWithOtp({ email })
+  const redirectUrl = getAuthRedirectUrl(`/verify?method=device&device_id=${encodeURIComponent(tokenJson.device_id)}&token=${encodeURIComponent(tokenJson.token)}`)
+  const { error: otpError } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } })
         if (otpError) {
           setFeedback({ type: 'error', message: otpError.message })
         } else {
@@ -232,8 +232,8 @@ function MagicLinkButton({ email, setFeedback, supabaseClient, trustDevice }: { 
         setFeedback(null)
         // Send magic link to the new /verify route so the app can display a
         // clear verification UX and avoid sending users to a nonexistent page.
-        const redirectUrl = getAuthRedirectUrl(`/verify?method=magic${trustDevice ? '&trusted=1' : ''}`)
-        const { error } = await supabaseClient.auth.signInWithOtp({ email })
+  const redirectUrl = getAuthRedirectUrl(`/verify?method=magic${trustDevice ? '&trusted=1' : ''}`)
+  const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectUrl } })
         setSending(false)
         if (error) {
           setFeedback({ type: 'error', message: error.message })
@@ -263,8 +263,7 @@ function ResetPasswordButton({ email, setFeedback, supabaseClient }: { email: st
         setFeedback(null)
         // Redirect to /verify after password reset so user sees a confirmation
         const { error: resetError } = await supabaseClient.auth.resetPasswordForEmail(email, {
-          // Let Supabase use default redirect or configured project setting
-          redirectTo: undefined,
+          redirectTo: getAuthRedirectUrl('/verify?method=reset'),
         })
         setSending(false)
         if (resetError) {

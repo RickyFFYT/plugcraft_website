@@ -282,7 +282,7 @@ function AdminContent() {
             )}
 
             {activeTab === 'settings' && (
-              <AdminSettings settings={settings} onToggleLock={toggleLock} />
+              <AdminSettings settings={settings} onToggleLock={toggleLock} onSave={saveSetting} />
             )}
 
             {activeTab === 'quotas' && (

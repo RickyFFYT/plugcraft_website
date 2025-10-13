@@ -1,3 +1,4 @@
+import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useUser } from '@supabase/auth-helpers-react'
@@ -84,6 +85,24 @@ const faqs = [
 
 export default function Home() {
   const user = useUser()
+  const [discordLink, setDiscordLink] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const res = await fetch('/api/admin/settings')
+        if (!res.ok) return
+        const j = await res.json()
+        const d = (j.settings || []).find((s: any) => s.key === 'discord_link')
+        const val = d?.value || d?.value?.value || null
+        if (mounted) setDiscordLink(val)
+      } catch (e) {
+        // ignore
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
 
   // update global CSS vars from mouse to drive sheen and hero parallax
   function handleRootMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -182,7 +201,7 @@ export default function Home() {
               <li>✔ Direct support</li>
               <li>✔ Early access to new tools</li>
             </ul>
-            <a href="https://discord.gg/S7PsbJ2e" target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center"><span>Get Pro Access</span></a>
+            <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center"><span>Get Pro Access</span></a>
           </Card3DRotate>
           </div>
       <div className="mt-10 animate-fade-in delay-300">
@@ -250,22 +269,29 @@ export default function Home() {
       </section>
 
   <section className="animate-fade-in-up delay-400">
-        <div className="mx-auto max-w-5xl px-4 py-20 text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white">Why Ghosted?</h2>
-          <p className="mt-4 text-base text-slate-300">
-            Ghosted is engineered for gamers who want the edge—no bloat, no hassle, just pure lag control. Developed by <span className="font-semibold text-white">Dracaryn Studio</span>.
-          </p>
-            <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
-            <span className="soft-pill">Plug & Play</span>
-            <span className="soft-pill">Beautiful UI</span>
-            <span className="soft-pill">Made for Gamers</span>
-            <span className="soft-pill">Secure & Private</span>
-          </div>
-            <div className="mt-10 flex justify-center">
-                  {/* If you want to show studio logo, use only in footer or about section, not hero */}
-          </div>
-        </div>
-      </section>
+    <div className="mx-auto max-w-5xl px-4 py-20 text-center sm:px-6 lg:px-8">
+      <h2 className="text-3xl font-bold text-white">Why Ghosted?</h2>
+      <p className="mt-4 text-base text-slate-300">
+        Ghosted is engineered for gamers who want the edge—no bloat, no hassle, just pure lag control. Developed by <span className="font-semibold text-white">Dracaryn Studio</span>.
+      </p>
+
+      <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center rounded-md px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-indigo-400"><span>Join Discord for Support & Purchase</span></a>
+        <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-ghost inline-flex items-center rounded-md border border-white/30 px-6 py-3 text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white"><span>Public Discord: {discordLink ? (() => { try { return new URL(discordLink).pathname.replace('/', '') } catch { return discordLink } })() : 'S7PsbJ2e'}</span></a>
+      </div>
+
+      <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
+        <span className="soft-pill">Plug & Play</span>
+        <span className="soft-pill">Beautiful UI</span>
+        <span className="soft-pill">Made for Gamers</span>
+        <span className="soft-pill">Secure & Private</span>
+      </div>
+
+      <div className="mt-10 flex justify-center">
+        {/* If you want to show studio logo, use only in footer or about section, not hero */}
+      </div>
+    </div>
+  </section>
 
   {/* Video Tutorial & FAQ Section */}
   <section id="faqs" className="animate-fade-in-up delay-500">
@@ -327,8 +353,8 @@ export default function Home() {
               <p className="text-sm text-slate-300 leading-relaxed">
                 <strong className="text-white">📺 What you'll learn:</strong><br/>
                 • Installing Ghosted on your system<br/>
-                • Configuring network settings<br/>
-                • Using the lagswitch controls<br/>
+                          <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center rounded-md px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-indigo-400"><span>Join Discord for Support & Purchase</span></a>
+                          <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-ghost inline-flex items-center rounded-md border border-white/30 px-6 py-3 text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white"><span>Public Discord: {discordLink ? new URL(discordLink).pathname.replace('/', '') : 'S7PsbJ2e'}</span></a>
                 • Managing your usage quota<br/>
                 • Pro tips for optimal performance
               </p>
@@ -382,8 +408,8 @@ export default function Home() {
               Launch verified onboarding, usage visibility, and secure downloads today.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <a href="https://discord.gg/S7PsbJ2e" target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center rounded-md px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-indigo-400"><span>Join Discord for Support & Purchase</span></a>
-              <a href="https://discord.gg/S7PsbJ2e" target="_blank" rel="noopener noreferrer" className="btn-ghost inline-flex items-center rounded-md border border-white/30 px-6 py-3 text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white"><span>Public Discord: S7PsbJ2e</span></a>
+              <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center rounded-md px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-indigo-400"><span>Join Discord for Support & Purchase</span></a>
+              <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-ghost inline-flex items-center rounded-md border border-white/30 px-6 py-3 text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white"><span>Public Discord: {discordLink ? (() => { try { return new URL(discordLink).pathname.replace('/', '') } catch { return discordLink } })() : 'S7PsbJ2e'}</span></a>
             </div>
       {/* Glassmorphism and animated lines CSS moved to globals.css */}
           </div>
