@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+import SEO from '../components/SEO'
 
 export default function SignupPage() {
   const supabaseClient = useSupabaseClient()
@@ -98,9 +99,7 @@ export default function SignupPage() {
 
   return (
     <>
-      <Head>
-        <title>Sign up | Plugcraft</title>
-      </Head>
+      <SEO title="Sign up — Plugcraft" description="Create a Plugcraft (Ghosted) account to download trusted builds and manage your usage." />
       <div className="flex min-h-[calc(100vh-136px)] items-center justify-center px-4 py-10">
   <div className="w-full max-w-md rounded-3xl glass-card force-sheen p-8 shadow-2xl border border-white/10">
           <div className="text-center">

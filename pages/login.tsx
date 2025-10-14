@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+import SEO from '../components/SEO'
 import { getAuthRedirectUrl } from '../lib/supabase'
 
 // Use public assets for logos
@@ -133,9 +134,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <Head>
-        <title>Log in | Ghosted</title>
-      </Head>
+      <SEO title="Log in — Plugcraft" description="Log in to your Plugcraft (Ghosted) account to access downloads, dashboard, and support." />
       <div className="flex min-h-[calc(100vh-136px)] items-center justify-center px-4 py-10">
   <div className="w-full max-w-md rounded-3xl glass-card force-sheen p-8 shadow-2xl border border-white/10">
           <div className="flex flex-col items-center gap-2 mb-4">

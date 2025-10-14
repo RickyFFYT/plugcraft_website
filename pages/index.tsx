@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useUser } from '@supabase/auth-helpers-react'
+import SEO from '../components/SEO'
 import Card3DRotate from '../components/Card3DRotate'
 import LogoLockup from '../components/LogoLockup'
 // Use public assets for logos
@@ -117,6 +118,32 @@ export default function Home() {
   }
 
   return (
+    <>
+      <SEO
+        title="Plugcraft — Ghosted: High-performance gaming tools"
+        description="Plugcraft (Ghosted) provides advanced network diagnostics and lag mitigation for fair play. Learn how to fix lag, detect issues, and use Ghosted responsibly."
+        image="/assets/Ghosted_logo.png"
+        canonical="https://plugcraft.online/"
+      >
+        {/* FAQ structured data as JSON-LD for rich results */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: faqs.map((f) => ({
+                '@type': 'Question',
+                name: f.q,
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: f.a,
+                },
+              })),
+            }),
+          }}
+        />
+      </SEO>
     <div onMouseMove={handleRootMouseMove} className="relative overflow-hidden min-h-screen">
       {/* Skip link for keyboard users */}
       <a href="#home-heading" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-white/8 focus:text-white focus:px-3 focus:py-2 focus:rounded" aria-label="Skip to main content">Skip to main content</a>
@@ -417,5 +444,6 @@ export default function Home() {
       </section>
       {/* Animations moved to globals.css */}
     </div>
+    </>
   )
 }

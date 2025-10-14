@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Sitemap: https://plugcraft.online/sitemap.xml
+
+# Crawl-delay can be set for polite crawling, but Google ignores it; use only if needed.
+# Crawl-delay: 10
