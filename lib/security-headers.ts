@@ -27,24 +27,34 @@ export function setSecurityHeaders(res: NextApiResponse) {
 
 /**
  * Validate and sanitize email input
+ * Uses a simple, safe regex that avoids ReDoS vulnerabilities
  */
 export function sanitizeEmail(email: string | undefined): string | null {
   if (!email || typeof email !== 'string') return null
   
   const trimmed = email.trim().toLowerCase()
   
-  // Basic email validation regex
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(trimmed)) return null
-  
   // Prevent excessively long emails
   if (trimmed.length > 254) return null
+  
+  // Simple, safe email validation - just check for @ and basic structure
+  // Avoid complex regex to prevent ReDoS attacks
+  const atIndex = trimmed.indexOf('@')
+  if (atIndex < 1 || atIndex === trimmed.length - 1) return null
+  
+  const dotIndex = trimmed.indexOf('.', atIndex)
+  if (dotIndex < atIndex + 2 || dotIndex === trimmed.length - 1) return null
+  
+  // Additional basic checks
+  if (trimmed.includes('..') || trimmed.startsWith('.') || trimmed.endsWith('.')) return null
+  if (!/^[a-z0-9@._+-]+$/.test(trimmed)) return null
   
   return trimmed
 }
 
 /**
  * Validate authorization header and extract bearer token
+ * Uses simple string operations to avoid ReDoS vulnerabilities
  */
 export function extractBearerToken(authHeader: string | string[] | undefined): string | null {
   if (!authHeader) return null
@@ -52,8 +62,12 @@ export function extractBearerToken(authHeader: string | string[] | undefined): s
   const header = Array.isArray(authHeader) ? authHeader[0] : authHeader
   if (typeof header !== 'string') return null
   
-  const match = header.match(/^Bearer\s+(.+)$/i)
-  return match ? match[1] : null
+  // Use simple string operations instead of regex to avoid ReDoS
+  const normalized = header.trim()
+  if (!normalized.toLowerCase().startsWith('bearer ')) return null
+  
+  const token = normalized.substring(7).trim() // Skip "Bearer "
+  return token || null
 }
 
 /**

@@ -96,12 +96,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Set an httpOnly cookie with improved security settings
     const cookieValue = Buffer.from(`${device_id}:${token}`).toString('base64')
     const maxAge = 30 * 24 * 60 * 60 // 30 days
-    const isProd = process.env.NODE_ENV === 'production'
 
-    // Use Strict SameSite for better CSRF protection
+    // Always use Secure flag - browsers will handle HTTP vs HTTPS appropriately
     res.setHeader(
       'Set-Cookie', 
-      `trusted_device=${cookieValue}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict; ${isProd ? 'Secure; ' : ''}`
+      `trusted_device=${cookieValue}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict; Secure`
     )
 
     return res.status(200).json({ ok: true })

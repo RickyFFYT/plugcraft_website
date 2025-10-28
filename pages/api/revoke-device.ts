@@ -48,11 +48,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Failed to revoke device' })
     }
 
-    // Clear cookie with improved security settings (use Strict for consistency)
-    const isProd = process.env.NODE_ENV === 'production'
+    // Clear cookie with improved security settings (always use Secure flag)
     res.setHeader(
       'Set-Cookie', 
-      `trusted_device=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict; ${isProd ? 'Secure; ' : ''}`
+      `trusted_device=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict; Secure`
     )
 
     return res.status(200).json({ ok: true })
