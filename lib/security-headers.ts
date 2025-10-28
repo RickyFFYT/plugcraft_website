@@ -27,7 +27,7 @@ export function setSecurityHeaders(res: NextApiResponse) {
 
 /**
  * Validate and sanitize email input
- * Uses a simple, safe regex that avoids ReDoS vulnerabilities
+ * Uses character-by-character validation to avoid ReDoS vulnerabilities
  */
 export function sanitizeEmail(email: string | undefined): string | null {
   if (!email || typeof email !== 'string') return null
@@ -38,7 +38,7 @@ export function sanitizeEmail(email: string | undefined): string | null {
   if (trimmed.length > 254) return null
   
   // Simple, safe email validation - just check for @ and basic structure
-  // Avoid complex regex to prevent ReDoS attacks
+  // Avoid regex to prevent ReDoS attacks
   const atIndex = trimmed.indexOf('@')
   if (atIndex < 1 || atIndex === trimmed.length - 1) return null
   
@@ -47,7 +47,21 @@ export function sanitizeEmail(email: string | undefined): string | null {
   
   // Additional basic checks
   if (trimmed.includes('..') || trimmed.startsWith('.') || trimmed.endsWith('.')) return null
-  if (!/^[a-z0-9@._+-]+$/.test(trimmed)) return null
+  
+  // Validate allowed characters without regex
+  for (let i = 0; i < trimmed.length; i++) {
+    const char = trimmed[i]
+    const isValid = 
+      (char >= 'a' && char <= 'z') ||
+      (char >= '0' && char <= '9') ||
+      char === '@' ||
+      char === '.' ||
+      char === '_' ||
+      char === '+' ||
+      char === '-'
+    
+    if (!isValid) return null
+  }
   
   return trimmed
 }
