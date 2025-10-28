@@ -40,6 +40,7 @@ export default function VerifyPage() {
 
     // Generic fallback
     setMessage('If you just completed an action from your email, and you are not signed in, please try the link again or request a new one from the login page.')
+    return
   }, [user, method, router])
 
   // If the query indicates device verification, and the user is signed in,
@@ -65,19 +66,21 @@ export default function VerifyPage() {
           const json = await resp.json()
           if (!resp.ok) {
             setError(json?.error || 'Failed to confirm device')
+            return
           } else {
             setMessage('Device confirmed and trusted for 30 days. Redirecting to dashboard...')
-            const t = setTimeout(() => router.replace('/dashboard'), 1500)
-            return () => clearTimeout(t)
+            setTimeout(() => router.replace('/dashboard'), 1500)
+            return
           }
         } catch (err) {
           setError('Failed to confirm device')
+          return
         }
       }
     }
 
-    tryConfirmDevice()
-  }, [user, method, router])
+    void tryConfirmDevice()
+  }, [user, method, router, supabaseClient])
 
   // Provide an action to re-send a magic link if a user lands here without
   // being signed in and wants another email. This is intentionally rate

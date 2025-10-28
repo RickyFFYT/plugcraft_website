@@ -234,7 +234,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (pErr) return res.status(500).json({ error: pErr.message })
         if (!profileRow) return res.status(404).json({ error: 'Profile not found' })
         // Upsert into usage_windows using user_id = profile.id
-        const { data: uw, error: uwErr } = await supabaseAdmin.from('usage_windows').upsert({ user_id: profileRow.id, max_usage_seconds, window_seconds }).select().maybeSingle()
+        const { error: uwErr } = await supabaseAdmin.from('usage_windows').upsert({ user_id: profileRow.id, max_usage_seconds, window_seconds }).select().maybeSingle()
         if (uwErr) return res.status(500).json({ error: uwErr.message })
         await supabaseAdmin.from('admin_audit').insert([{ admin_id: profile.id, action: 'set_window', target_id: profileRow.id, details: { max_usage_seconds, window_seconds } }])
         return res.status(200).json({ success: true })

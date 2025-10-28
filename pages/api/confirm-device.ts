@@ -1,31 +1,44 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!serviceRoleKey) {
-  console.error('Missing SUPABASE_SERVICE_ROLE_KEY')
-}
-
-const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey || '')
+import { setSecurityHeaders, extractBearerToken, validateRequestSize } from '../../lib/security-headers'
+import { getEnvVars } from '../../lib/env-validation'
 
 function hashToken(token: string) {
   return crypto.createHash('sha256').update(token).digest('hex')
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  // Set security headers
+  setSecurityHeaders(res)
+  
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST')
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // Validate request size
+  if (!validateRequestSize(req.body, 10)) {
+    return res.status(413).json({ error: 'Request too large' })
+  }
 
   const { device_id, token } = req.body
-  if (!device_id || !token) return res.status(400).json({ error: 'Missing device_id or token' })
+  if (!device_id || !token) {
+    return res.status(400).json({ error: 'Missing device_id or token' })
+  }
 
-  // Expect an Authorization: Bearer <access_token> header so we can identify the user
-  const authHeader = req.headers.authorization || ''
-  const match = authHeader.match(/^Bearer (.+)$/)
-  if (!match) return res.status(401).json({ error: 'Missing bearer token' })
-  const accessToken = match[1]
+  // Validate input format
+  if (typeof device_id !== 'string' || typeof token !== 'string') {
+    return res.status(400).json({ error: 'Invalid device_id or token format' })
+  }
+
+  const accessToken = extractBearerToken(req.headers.authorization)
+  if (!accessToken) {
+    return res.status(401).json({ error: 'Missing or invalid bearer token' })
+  }
+
+  const env = getEnvVars()
+  const supabaseAdmin = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 
   try {
     // Verify user via the service role client
@@ -50,15 +63,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const device = deviceRows[0]
-    if (device.status !== 'pending') return res.status(400).json({ error: 'Device not pending' })
-    if (device.token_hash !== tokenHash) return res.status(400).json({ error: 'Invalid token' })
-    if (device.expires_at && new Date(device.expires_at) < new Date()) return res.status(400).json({ error: 'Token expired' })
+    
+    if (device.status !== 'pending') {
+      return res.status(400).json({ error: 'Device not pending' })
+    }
+    
+    if (device.token_hash !== tokenHash) {
+      return res.status(400).json({ error: 'Invalid token' })
+    }
+    
+    if (device.expires_at && new Date(device.expires_at) < new Date()) {
+      return res.status(400).json({ error: 'Token expired' })
+    }
 
     const trustedUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
 
     const { error: updateErr } = await supabaseAdmin
       .from('trusted_devices')
-      .update({ status: 'trusted', user_id: user.id, trusted_until: trustedUntil, last_seen: new Date().toISOString() })
+      .update({ 
+        status: 'trusted', 
+        user_id: user.id, 
+        trusted_until: trustedUntil, 
+        last_seen: new Date().toISOString() 
+      })
       .eq('device_id', device_id)
 
     if (updateErr) {
@@ -66,18 +93,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Failed to mark device trusted' })
     }
 
-    // Set an httpOnly cookie so future visits from this device present the
-    // token to server endpoints. Store the raw token in the cookie because
-    // the server stores only a hash.
+    // Set an httpOnly cookie with improved security settings
     const cookieValue = Buffer.from(`${device_id}:${token}`).toString('base64')
     const maxAge = 30 * 24 * 60 * 60 // 30 days
-    const isProd = process.env.NODE_ENV === 'production'
 
-    res.setHeader('Set-Cookie', `trusted_device=${cookieValue}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax; ${isProd ? 'Secure; ' : ''}`)
+    // Always use Secure flag - browsers will handle HTTP vs HTTPS appropriately
+    res.setHeader(
+      'Set-Cookie', 
+      `trusted_device=${cookieValue}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict; Secure`
+    )
 
     return res.status(200).json({ ok: true })
   } catch (err) {
-    console.error(err)
-    return res.status(500).json({ error: 'Internal error' })
+    console.error('confirm-device error:', err)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }

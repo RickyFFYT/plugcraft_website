@@ -46,7 +46,7 @@ export default function AuthForm({ type }: AuthFormProps) {
         // Use redirectTo for verification and avoid embedding the user's email in the URL
           const redirect = getAuthRedirectUrl('/verify?method=confirm')
 
-          const { data, error } = await supabase.auth.signUp({
+          const { error } = await supabase.auth.signUp({
             email: trimmedEmail,
             password,
             options: { emailRedirectTo: redirect, data: { full_name: trimmedName } },

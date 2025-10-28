@@ -4,7 +4,6 @@ import Link from 'next/link'
 
 type LogoLockupProps = {
   markSrc: string
-  wordmarkSrc: string
   markAlt?: string
   wordmarkAlt?: string
   className?: string
@@ -22,7 +21,6 @@ type LogoLockupProps = {
  */
 export default function LogoLockup({
   markSrc,
-  wordmarkSrc,
   markAlt = 'Ghosted logo',
   wordmarkAlt = 'Ghosted — lagswitch software',
   className = '',

@@ -1,6 +1,5 @@
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useUser } from '@supabase/auth-helpers-react'
 import SEO from '../components/SEO'
 import Card3DRotate from '../components/Card3DRotate'
@@ -182,7 +181,6 @@ export default function Home() {
   <div className="relative flex items-center justify-center w-full mt-8 mb-2" style={{ minHeight: '140px' }}>
     <LogoLockup
       markSrc={GhostedLogo}
-      wordmarkSrc={GhostedLogo}
       markAlt="Ghosted logo"
       wordmarkAlt="Ghosted — lagswitch software"
       className="logo-stack-hero"

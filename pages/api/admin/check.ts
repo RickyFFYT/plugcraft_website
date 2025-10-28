@@ -105,15 +105,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Prevent caching for this sensitive endpoint — ensure clients always get a fresh decision
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
-    const { isAdmin, profile, debug } = await getAdminInfoForUserToken(req)
+    const { isAdmin, profile } = await getAdminInfoForUserToken(req)
     const result: any = { isAdmin: !!isAdmin }
     if (profile) result.profile = profile
-    // Only return debug details in non-production to avoid leaking user data
-    if (process.env.NODE_ENV !== 'production') {
-      result.debug = debug
-    }
+    // Never return debug details - they could leak sensitive user information
     return res.status(200).json(result)
   } catch (err: any) {
-    return res.status(500).json({ error: err?.message || 'Server error' })
+    console.error('admin/check error:', err)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
