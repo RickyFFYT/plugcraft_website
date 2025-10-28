@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
@@ -75,7 +74,7 @@ export default function SignupPage() {
 
     if (data?.user) {
       try {
-        const { data: profileData, error: upsertError } = await supabaseClient.from('profiles').upsert({
+        const { error: upsertError } = await supabaseClient.from('profiles').upsert({
           user_id: data.user.id,
           full_name: trimmedName,
         })

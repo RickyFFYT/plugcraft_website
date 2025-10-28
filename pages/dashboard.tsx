@@ -135,10 +135,6 @@ function DashboardContent() {
   const getDownloadUrl = () => {
     return latestRelease?.download_url || downloadUrl
   }
-  const handleDownload = () => {
-    const url = getDownloadUrl()
-    window.open(url, '_blank', 'noopener')
-  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 animate-fade-in">

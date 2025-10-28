@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import ProtectedRoute from '../components/ProtectedRoute'
-import { useSession, useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import { AdminTabs, AdminAnnouncements, AdminUsers, AdminSettings, AdminReleases, AdminQuotas } from '../components/admin'
 
 interface Announcement {
@@ -26,7 +26,6 @@ export default function AdminPage() {
 function AdminContent() {
   const session = useSession()
   const supabase = useSupabaseClient()
-  const user = useUser()
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   const [serverCheckWarning, setServerCheckWarning] = useState<string | null>(null)
@@ -201,12 +200,6 @@ function AdminContent() {
 
   const handleCreateAnnouncement = async (e: React.FormEvent) => {
     await createAnnouncement(e)
-  }
-
-  const handleUserAction = async (action: string, userId: string) => {
-    // Allow passing structured payload via a specially formatted action string or via overload
-    // If action contains a JSON payload it will be ignored here — AdminUsers will call performUserAction directly
-    await performUserAction(action, userId)
   }
   
   // Exposed to quota tab to update global defaults

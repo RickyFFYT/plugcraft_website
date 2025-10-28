@@ -62,7 +62,7 @@ export default function UsageCard() {
       }
     })
     // Also listen for new usage_sessions to refresh the total or timeline
-    channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'usage_sessions', filter: `user_id=eq.${user.id}` }, (payload) => {
+    channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'usage_sessions', filter: `user_id=eq.${user.id}` }, () => {
       // On new sessions, refresh the precomputed window info
       fetchData()
     })

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import bg from '../assets/background.png'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import { ReactNode, useState, useEffect, useRef } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 
 interface LayoutProps {
@@ -22,9 +22,6 @@ export default function Layout({ children }: LayoutProps) {
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement | null>(null)
-  const menuCloseTimerRef = useRef<number | null>(null)
 
   const handleSignOut = async () => {
     try {
@@ -70,21 +67,6 @@ export default function Layout({ children }: LayoutProps) {
       document.body.style.overflow = ''
     }
   }, [mobileOpen])
-
-  // Close desktop dropdown on outside click or Escape key
-  useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      if (!menuRef.current) return
-      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false) }
-    document.addEventListener('click', onDocClick)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('click', onDocClick)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [])
 
   return (
     <div
