@@ -1,10 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+import { setSecurityHeaders, sanitizeEmail } from '../../lib/security-headers'
+import { getEnvVars } from '../../lib/env-validation'
 
 // Very small in-memory rate limiter to reduce enumeration abuse.
 // Note: For a production deployment in serverless environments this should be
@@ -31,7 +29,13 @@ function parseCookieDevice(header?: string | string[] | undefined) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
+  // Set security headers
+  setSecurityHeaders(res)
+  
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET')
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
 
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
   try {
@@ -53,7 +57,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { email } = req.query as { email?: string }
-  if (!email) return res.status(400).json({ error: 'Missing email' })
+  const sanitizedEmail = sanitizeEmail(email)
+  
+  if (!sanitizedEmail) {
+    return res.status(400).json({ error: 'Valid email is required' })
+  }
+
+  const env = getEnvVars()
+  const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
   const cookieHeader = req.headers.cookie
   const parsed = parseCookieDevice(cookieHeader)
@@ -68,12 +79,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('device_id', parsed.deviceId)
       .limit(1)
 
-    if (error || !rows || rows.length === 0) return res.status(200).json({ trusted: false })
+    if (error || !rows || rows.length === 0) {
+      return res.status(200).json({ trusted: false })
+    }
 
     const device = rows[0]
-    if (device.status !== 'trusted') return res.status(200).json({ trusted: false })
-    if (device.email !== email) return res.status(200).json({ trusted: false })
-    if (device.trusted_until && new Date(device.trusted_until) < new Date()) return res.status(200).json({ trusted: false })
+    
+    if (device.status !== 'trusted') {
+      return res.status(200).json({ trusted: false })
+    }
+    
+    if (device.email !== sanitizedEmail) {
+      return res.status(200).json({ trusted: false })
+    }
+    
+    if (device.trusted_until && new Date(device.trusted_until) < new Date()) {
+      return res.status(200).json({ trusted: false })
+    }
 
     // Now verify token hash matches
     const { data: verifyRows } = await supabase
@@ -83,13 +105,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .limit(1)
 
     const storedHash = verifyRows?.[0]?.token_hash
-    if (!storedHash) return res.status(200).json({ trusted: false })
+    if (!storedHash) {
+      return res.status(200).json({ trusted: false })
+    }
 
-    if (storedHash !== tokenHash) return res.status(200).json({ trusted: false })
+    if (storedHash !== tokenHash) {
+      return res.status(200).json({ trusted: false })
+    }
 
     return res.status(200).json({ trusted: true })
   } catch (err) {
-    console.error(err)
-    return res.status(500).json({ error: 'Internal error' })
+    console.error('check-device error:', err)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
