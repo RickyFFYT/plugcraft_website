@@ -223,41 +223,85 @@ export default function UsageCard() {
 
   return (
     <section className="glass-card force-sheen p-8 border border-blue-400/20 shadow-lg animate-fade-in-up" aria-labelledby="usage-title">
-      <h3 id="usage-title" className="text-lg font-bold text-white flex items-center gap-2 mb-2">
-        <svg width="20" height="20" fill="none" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="#60A5FA" strokeWidth="2" fill="#1e293b"/><path d="M10 5v5l3 3" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        Usage
-        <button onClick={fetchData} className="ml-auto text-sm text-slate-300 hover:text-white focus:outline-none" aria-label="Refresh usage">Refresh</button>
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 id="usage-title" className="text-xl font-bold text-white flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+            <svg width="20" height="20" fill="none" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="#60A5FA" strokeWidth="2" fill="#1e293b"/><path d="M10 5v5l3 3" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+          Usage Tracker
+        </h3>
+        <button 
+          onClick={fetchData} 
+          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-400" 
+          aria-label="Refresh usage"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh
+        </button>
+      </div>
       {windowInfo ? (
         <>
-          <div className="flex items-center gap-4 mb-3">
-            <div>
-              <div className="text-2xl font-semibold text-blue-200" aria-label="Used seconds display">{minutesUsed}</div>
-              <div className="text-xs text-slate-400">minutes used</div>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 p-4 rounded-xl border border-blue-500/20">
+              <div className="text-3xl font-bold text-blue-200" aria-label="Used seconds display">{minutesUsed}</div>
+              <div className="text-xs text-slate-400 mt-1">minutes used</div>
             </div>
-            <div className="mx-2 text-slate-400">/</div>
-            <div>
-              <div className="text-lg text-slate-200" aria-label="Window max minutes">{minutesMax} min</div>
-              <div className="text-xs text-slate-400">window length</div>
-            </div>
-            <div className="ml-auto text-sm text-slate-300">
-              {windowInfo.window_start ? (
-                isWindowExpired ? (
-                  <div className="text-yellow-300">Window expired — reset to 0</div>
-                ) : (
-                  <div>
-                    <div>Window started: <span className="font-medium">{new Date(windowInfo.window_start).toLocaleString()}</span></div>
-                    <div>Resets in: <span className="font-medium">{timeLeft === null ? '—' : `${Math.floor((timeLeft||0)/60)}m ${((timeLeft||0)%60)}s`}</span></div>
-                  </div>
-                )
-              ) : (
-                <div className="text-slate-400">Window not started yet</div>
-              )}
+            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-4 rounded-xl border border-purple-500/20">
+              <div className="text-2xl font-bold text-purple-200" aria-label="Window max minutes">{minutesMax}</div>
+              <div className="text-xs text-slate-400 mt-1">max per window</div>
             </div>
           </div>
-          <div className="w-full bg-slate-800/60 rounded-full h-3 mb-2 relative" role="progressbar" aria-valuenow={usedSeconds} aria-valuemax={maxSeconds} aria-label="Usage progress">
-            <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500 h-3 rounded-full transition-all duration-700" style={{ width: `${Math.min(windowPercentage, 100)}%` }}></div>
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-300">{Math.round(windowPercentage)}%</span>
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-300">Usage Progress</span>
+              <span className="text-sm font-semibold text-blue-300">{Math.round(windowPercentage)}%</span>
+            </div>
+            <div className="w-full bg-slate-800/60 rounded-full h-4 relative overflow-hidden shadow-inner" role="progressbar" aria-valuenow={usedSeconds} aria-valuemax={maxSeconds} aria-label="Usage progress">
+              <div 
+                className={`h-4 rounded-full transition-all duration-700 ease-out ${
+                  windowPercentage > 90 ? 'bg-gradient-to-r from-red-500 via-orange-500 to-red-600' :
+                  windowPercentage > 70 ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-600' :
+                  'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500'
+                }`}
+                style={{ width: `${Math.min(windowPercentage, 100)}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+            {windowInfo.window_start ? (
+              isWindowExpired ? (
+                <div className="flex items-center gap-2 text-yellow-300">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Window expired — reset to 0
+                </div>
+              ) : (
+                <div className="text-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-slate-400">Window started:</span>
+                    <span className="font-medium text-slate-200">{new Date(windowInfo.window_start).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Resets in:</span>
+                    <span className="font-mono font-bold text-indigo-300">
+                      {timeLeft === null ? '—' : `${Math.floor((timeLeft||0)/60)}m ${((timeLeft||0)%60)}s`}
+                    </span>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="flex items-center gap-2 text-slate-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Window not started yet
+              </div>
+            )}
           </div>
         </>
       ) : (

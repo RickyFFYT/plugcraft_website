@@ -171,12 +171,17 @@ export default function Home() {
   </div>
   <div className="relative w-full max-w-3xl mx-auto glass-panel p-10 rounded-3xl shadow-xl flex flex-col items-center text-center">
     <h1 className="text-5xl sm:text-6xl font-extrabold gradient-heading mb-6">Dominate Every Match with Ghosted</h1>
-    <p className="text-lg text-slate-200 mb-8">The most advanced lagswitch software trusted by competitive gamers. Zero detection, instant activation, and a beautiful interface that doesn't compromise on performance.</p>
+    <p className="text-lg sm:text-xl text-slate-200 mb-8 max-w-2xl">The advanced lagswitch software trusted by competitive gamers. Zero detection, instant activation.</p>
     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-  <Link href={user ? '/dashboard' : '/signup'} className="btn-primary text-center text-lg px-8 py-4"><span>{user ? 'Open dashboard' : 'Start Free Trial'}</span></Link>
-  <Link href="#features" className="btn-ghost text-center text-lg px-8 py-4"><span>See How It Works</span></Link>
+  <Link href={user ? '/dashboard' : '/signup'} className="btn-primary text-center text-lg px-10 py-5 font-bold btn-pulse"><span>{user ? 'Open Dashboard' : 'Start Free Trial'}</span></Link>
+  <Link href="#features" className="btn-ghost text-center text-lg px-10 py-5"><span>See How It Works</span></Link>
     </div>
-    <div className="mt-6 text-sm text-slate-400">⚡ <span className="soft-pill text-yellow-400 font-semibold">Limited time:</span> Free plan includes 30 mins on 2h window</div>
+    <div className="mt-8 flex items-center gap-2 text-sm text-slate-300">
+      <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+      </svg>
+      <span className="font-semibold text-yellow-400">Limited Time:</span> Free plan includes 30 mins per 2h window
+    </div>
   </div>
   {/* Responsive logo lockup: horizontal (lg), stacked (md), icon-only (sm) */}
   <div className="relative flex items-center justify-center w-full mt-8 mb-2" style={{ minHeight: '140px' }}>
@@ -258,13 +263,34 @@ export default function Home() {
 
   <section id="features" className="relative py-20 px-4 sm:px-8 lg:px-16">
         <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why Choose Ghosted?</h2>
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              Built for gamers who demand the best. No compromises, just results.
+            </p>
+          </div>
           <div className="grid md:grid-cols-3 gap-10">
-            {features.map((feature) => (
-              <div key={feature.title} className="glass-panel p-8 rounded-2xl text-center">
-                <div>
-                  <h3 className="text-2xl font-bold gradient-heading mb-3">{feature.title}</h3>
-                  <p className="text-base text-slate-200">{feature.description}</p>
+            {features.map((feature, idx) => (
+              <div key={feature.title} className="glass-panel p-8 rounded-2xl text-center simple-card-hover animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                  {idx === 0 && (
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  )}
+                  {idx === 1 && (
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  {idx === 2 && (
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  )}
                 </div>
+                <h3 className="text-2xl font-bold gradient-heading mb-3">{feature.title}</h3>
+                <p className="text-base text-slate-200">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -380,8 +406,7 @@ export default function Home() {
               <p className="text-sm text-slate-300 leading-relaxed">
                 <strong className="text-white">📺 What you'll learn:</strong><br/>
                 • Installing Ghosted on your system<br/>
-                          <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center rounded-md px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-indigo-400"><span>Join Discord for Support & Purchase</span></a>
-                          <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-ghost inline-flex items-center rounded-md border border-white/30 px-6 py-3 text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white"><span>Public Discord: {discordLink ? new URL(discordLink).pathname.replace('/', '') : 'S7PsbJ2e'}</span></a>
+                • Configuring and activating features<br/>
                 • Managing your usage quota<br/>
                 • Pro tips for optimal performance
               </p>

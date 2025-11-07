@@ -1,8 +1,11 @@
 import React from 'react'
 
+
+
 interface Tab {
   id: string
   label: string
+  icon?: React.ReactNode
 }
 
 interface AdminTabsProps {
@@ -27,6 +30,7 @@ export default function AdminTabs({ tabs, active, onChange }: AdminTabsProps) {
             aria-current={active === t.id}
           >
             <span className="relative z-10 flex items-center gap-2">
+              {t.icon && <span className="flex-shrink-0">{t.icon}</span>}
               {t.label}
               {active === t.id && (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
