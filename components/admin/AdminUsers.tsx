@@ -58,16 +58,35 @@ export default function AdminUsers({ users, onAction }: Props) {
           User Management
         </h2>
         <div className="flex items-center gap-4">
-          <div className="text-sm text-slate-400">
-            Showing {Math.min(filtered.length, (page - 1) * pageSize + 1)}–{Math.min(filtered.length, page * pageSize)} of {filtered.length} users
+          <div className="text-sm text-slate-400 flex items-center gap-2">
+            <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Showing {Math.min(filtered.length, (page - 1) * pageSize + 1)}–{Math.min(filtered.length, page * pageSize)} of {filtered.length} users</span>
           </div>
-          <input
-            placeholder="Search by email or name"
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); setPage(1) }}
-            className="glass-card text-white placeholder-slate-400 bg-transparent border-white/20 focus:border-indigo-400/50 focus:ring-indigo-400/30"
-            style={{ minWidth: '250px' }}
-          />
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              placeholder="Search by email or name"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setPage(1) }}
+              className="pl-10 pr-4 py-2 glass-card text-white placeholder-slate-400 bg-transparent border border-white/20 focus:border-indigo-400/50 focus:ring-2 focus:ring-indigo-400/30 rounded-lg transition-all"
+              style={{ minWidth: '280px' }}
+            />
+            {query && (
+              <button
+                onClick={() => { setQuery(''); setPage(1) }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                aria-label="Clear search"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
