@@ -141,25 +141,25 @@ function DashboardContent() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 animate-fade-in">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12 sm:px-6 lg:px-8 animate-fade-in">
+      <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+          <div className="flex flex-col xs:flex-row items-start xs:items-center gap-3 xs:gap-4 mb-3 sm:mb-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl sm:text-2xl font-bold flex-shrink-0">
               {profileName ? profileName.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <div>
-              <h1 className="text-4xl font-extrabold text-white drop-shadow animate-fade-in-up">Welcome back{profileName ? `, ${profileName}` : ''}!</h1>
-              <p className="mt-1 text-base text-slate-300">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl xs:text-3xl sm:text-4xl font-extrabold text-white drop-shadow animate-fade-in-up leading-tight break-words">Welcome back{profileName ? `, ${profileName}` : ''}!</h1>
+              <p className="mt-1 text-sm sm:text-base text-slate-300 truncate">
                 {user?.email}
               </p>
             </div>
           </div>
-          <p className="text-base text-slate-300 max-w-xl">
+          <p className="text-sm sm:text-base text-slate-300 max-w-xl">
             Monitor your Ghosted usage, download the latest build, and keep track of your account status.
           </p>
         </div>
-  <div className="glass-card glass-panel px-6 py-4 text-sm text-slate-200 shadow-lg min-w-[200px]" aria-label="Account details">
+  <div className="glass-card glass-panel px-4 sm:px-6 py-3 sm:py-4 text-sm text-slate-200 shadow-lg w-full lg:w-auto lg:min-w-[200px]" aria-label="Account details">
     <div className="animate-fade-in-up delay-200">
       <div className="flex items-center gap-2 mb-3">
         <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,24 +190,24 @@ function DashboardContent() {
   </div>
       </div>
 
-      <div className="mt-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="space-y-8">
-          <section className="glass-card glass-panel p-8 shadow-2xl border border-indigo-500/30" aria-labelledby="download-title">
+      <div className="mt-8 sm:mt-12 grid gap-6 sm:gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="space-y-6 sm:space-y-8">
+          <section className="glass-card glass-panel p-6 sm:p-8 shadow-2xl border border-indigo-500/30" aria-labelledby="download-title">
             <div className="animate-fade-in-up">
-              <div className="flex items-center justify-between mb-4">
-                <h2 id="download-title" className="text-2xl font-bold text-white flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v14m0 0l-4-4m4 4l4-4" stroke="#818CF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="4" y="17" width="16" height="4" rx="2" fill="#818CF8" fillOpacity=".12"/></svg>
+              <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 mb-4">
+                <h2 id="download-title" className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                    <svg width="20" height="20" className="sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v14m0 0l-4-4m4 4l4-4" stroke="#818CF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="4" y="17" width="16" height="4" rx="2" fill="#818CF8" fillOpacity=".12"/></svg>
                   </div>
-                  Download Ghosted
+                  <span className="leading-tight">Download Ghosted</span>
                 </h2>
                 {latestRelease?.version && (
-                  <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-sm font-semibold">
+                  <span className="px-2 sm:px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs sm:text-sm font-semibold flex-shrink-0">
                     {latestRelease.version}
                   </span>
                 )}
               </div>
-              <p className="text-sm text-slate-300 mb-6">
+              <p className="text-xs sm:text-sm text-slate-300 mb-4 sm:mb-6">
                 Get the latest build with cutting-edge features. Secure signed link expires in 1 hour.
               </p>
               <div className="flex flex-col gap-3">
@@ -215,32 +215,32 @@ function DashboardContent() {
                   href={getDownloadUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-3 rounded-lg btn-primary py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+                  className="inline-flex items-center justify-center gap-2 sm:gap-3 rounded-lg btn-primary py-3 sm:py-4 text-base sm:text-lg font-bold shadow-lg hover:shadow-xl transition-all touch-manipulation min-h-[52px]"
                   aria-label="Download latest build"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                   {isLoadingSettings ? 'Loading...' : 'Download Now'}
                 </a>
-                <div className="flex items-center gap-4 text-xs text-slate-400">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-slate-400">
                   <span className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    Virus scanned
+                    <span className="whitespace-nowrap">Virus scanned</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                     </svg>
-                    Secure download
+                    <span className="whitespace-nowrap">Secure download</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                     </svg>
-                    Updated recently
+                    <span className="whitespace-nowrap">Updated recently</span>
                   </span>
                 </div>
               </div>

@@ -169,18 +169,18 @@ export default function Home() {
     <div className="absolute left-0 top-0 w-2/3 h-2/3 bg-blob blob-lg bg-gradient-to-br from-pink-500 to-indigo-500 animate-drift" />
     <div className="absolute right-0 bottom-0 w-1/2 h-1/2 bg-blob blob-md bg-gradient-to-br from-cyan-400 to-blue-600 animate-drift" />
   </div>
-  <div className="relative w-full max-w-3xl mx-auto glass-panel p-10 rounded-3xl shadow-xl flex flex-col items-center text-center">
-    <h1 className="text-5xl sm:text-6xl font-extrabold gradient-heading mb-6">Dominate Every Match with Ghosted</h1>
-    <p className="text-lg sm:text-xl text-slate-200 mb-8 max-w-2xl">The advanced lagswitch software trusted by competitive gamers. Zero detection, instant activation.</p>
-    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-  <Link href={user ? '/dashboard' : '/signup'} className="btn-primary text-center text-lg px-10 py-5 font-bold btn-pulse"><span>{user ? 'Open Dashboard' : 'Start Free Trial'}</span></Link>
-  <Link href="#features" className="btn-ghost text-center text-lg px-10 py-5"><span>See How It Works</span></Link>
+  <div className="relative w-full max-w-3xl mx-auto glass-panel p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl shadow-xl flex flex-col items-center text-center">
+    <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-extrabold gradient-heading mb-4 sm:mb-6 leading-tight">Dominate Every Match with Ghosted</h1>
+    <p className="text-base sm:text-lg md:text-xl text-slate-200 mb-6 sm:mb-8 max-w-2xl px-2">The advanced lagswitch software trusted by competitive gamers. Zero detection, instant activation.</p>
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center w-full sm:w-auto">
+  <Link href={user ? '/dashboard' : '/signup'} className="btn-primary text-center text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 font-bold btn-pulse min-h-[56px] touch-manipulation"><span>{user ? 'Open Dashboard' : 'Start Free Trial'}</span></Link>
+  <Link href="#features" className="btn-ghost text-center text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 min-h-[56px] touch-manipulation"><span>See How It Works</span></Link>
     </div>
-    <div className="mt-8 flex items-center gap-2 text-sm text-slate-300">
-      <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm text-slate-300 px-2">
+      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
       </svg>
-      <span className="font-semibold text-yellow-400">Limited Time:</span> Free plan includes 30 mins per 2h window
+      <span className="font-semibold text-yellow-400">Limited Time:</span> <span className="text-center">Free plan includes 30 mins per 2h window</span>
     </div>
   </div>
   {/* Responsive logo lockup: horizontal (lg), stacked (md), icon-only (sm) */}
@@ -196,44 +196,44 @@ export default function Home() {
 </section>
 
       {/* Safety & Plans Section */}
-  <section className="relative z-10 py-20 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+  <section className="relative z-10 py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
     <div className="mx-auto max-w-5xl text-center">
-          <h2 className="text-3xl font-bold text-white mb-4 animate-fade-in">Choose Your Path to Victory</h2>
-          <p className="text-lg text-slate-300 mb-8 animate-fade-in delay-100 max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4 animate-fade-in px-4">Choose Your Path to Victory</h2>
+          <p className="text-base sm:text-lg text-slate-300 mb-6 sm:mb-8 animate-fade-in delay-100 max-w-3xl mx-auto px-4">
             Start free and upgrade when you're ready. All plans include our proprietary stealth technology and 24/7 support.
           </p>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 animate-fade-in delay-200" style={{ perspective: '1000px' }}>
-          <Card3DRotate className="glass-panel p-8 rounded-2xl w-full md:w-1/2">
-            <div className="text-center mb-4">
-              <span className="soft-pill bg-green-500 text-black">MOST POPULAR</span>
+          <div className="flex flex-col md:flex-row items-stretch justify-center gap-6 sm:gap-8 animate-fade-in delay-200" style={{ perspective: '1000px' }}>
+          <Card3DRotate className="glass-panel p-6 sm:p-8 rounded-xl sm:rounded-2xl w-full md:w-1/2 max-w-md mx-auto md:mx-0">
+            <div className="text-center mb-3 sm:mb-4">
+              <span className="soft-pill bg-green-500 text-black text-xs sm:text-sm px-3 py-1">MOST POPULAR</span>
             </div>
-            <h3 className="text-xl font-bold text-green-200 mb-2">Free Plan</h3>
-            <div className="text-3xl font-bold text-white mb-2">$0<span className="text-lg text-slate-400">/forever</span></div>
-            <p className="text-slate-200 mb-4">Perfect for trying Ghosted risk-free.</p>
-            <ul className="text-green-100 text-left text-sm space-y-2 mb-6">
-              <li>✔ 30 mins usage per 2 hour window</li>
-              <li>✔ All security & stealth features</li>
-              <li>✔ Community support</li>
-              <li>✔ No ads, no tracking</li>
-              <li>✔ Instant activation</li>
+            <h3 className="text-lg sm:text-xl font-bold text-green-200 mb-2">Free Plan</h3>
+            <div className="text-2xl sm:text-3xl font-bold text-white mb-2">$0<span className="text-base sm:text-lg text-slate-400">/forever</span></div>
+            <p className="text-sm sm:text-base text-slate-200 mb-4">Perfect for trying Ghosted risk-free.</p>
+            <ul className="text-green-100 text-left text-xs sm:text-sm space-y-2 mb-6">
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>30 mins usage per 2 hour window</span></li>
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>All security & stealth features</span></li>
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>Community support</span></li>
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>No ads, no tracking</span></li>
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>Instant activation</span></li>
             </ul>
-            <Link href="/signup" className="btn-primary w-full text-center"><span>Start Free Trial</span></Link>
+            <Link href="/signup" className="btn-primary w-full text-center min-h-[48px] flex items-center justify-center touch-manipulation"><span>Start Free Trial</span></Link>
           </Card3DRotate>
-          <Card3DRotate className="glass-panel p-8 rounded-2xl w-full md:w-1/2">
-            <div className="text-center mb-4">
-              <span className="soft-pill bg-indigo-500 text-white">BEST VALUE</span>
+          <Card3DRotate className="glass-panel p-6 sm:p-8 rounded-xl sm:rounded-2xl w-full md:w-1/2 max-w-md mx-auto md:mx-0">
+            <div className="text-center mb-3 sm:mb-4">
+              <span className="soft-pill bg-indigo-500 text-white text-xs sm:text-sm px-3 py-1">BEST VALUE</span>
             </div>
-            <h3 className="text-xl font-bold text-indigo-200 mb-2">Pro Plan</h3>
-            <div className="text-3xl font-bold text-white mb-2">$3.99<span className="text-lg text-slate-400">/month</span></div>
-            <p className="text-slate-200 mb-4">Unlimited power for serious gamers.</p>
-            <ul className="text-indigo-100 text-left text-sm space-y-2 mb-6">
-              <li>✔ Unlimited usage</li>
-              <li>✔ Priority updates & features</li>
-              <li>✔ Advanced stealth technology</li>
-              <li>✔ Direct support</li>
-              <li>✔ Early access to new tools</li>
+            <h3 className="text-lg sm:text-xl font-bold text-indigo-200 mb-2">Pro Plan</h3>
+            <div className="text-2xl sm:text-3xl font-bold text-white mb-2">$3.99<span className="text-base sm:text-lg text-slate-400">/month</span></div>
+            <p className="text-sm sm:text-base text-slate-200 mb-4">Unlimited power for serious gamers.</p>
+            <ul className="text-indigo-100 text-left text-xs sm:text-sm space-y-2 mb-6">
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>Unlimited usage</span></li>
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>Priority updates & features</span></li>
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>Advanced stealth technology</span></li>
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>Direct support</span></li>
+              <li className="flex items-start gap-2"><span className="flex-shrink-0">✔</span><span>Early access to new tools</span></li>
             </ul>
-            <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center"><span>Get Pro Access</span></a>
+            <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center min-h-[48px] flex items-center justify-center touch-manipulation"><span>Get Pro Access</span></a>
           </Card3DRotate>
           </div>
       <div className="mt-10 animate-fade-in delay-300">
@@ -261,36 +261,36 @@ export default function Home() {
         </div>
       </section>
 
-  <section id="features" className="relative py-20 px-4 sm:px-8 lg:px-16">
+  <section id="features" className="relative py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-16">
         <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why Choose Ghosted?</h2>
-            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12 px-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">Why Choose Ghosted?</h2>
+            <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto">
               Built for gamers who demand the best. No compromises, just results.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
             {features.map((feature, idx) => (
-              <div key={feature.title} className="glass-panel p-8 rounded-2xl text-center simple-card-hover animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+              <div key={feature.title} className="glass-panel p-6 sm:p-8 rounded-xl sm:rounded-2xl text-center simple-card-hover animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                   {idx === 0 && (
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   )}
                   {idx === 1 && (
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   )}
                   {idx === 2 && (
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   )}
                 </div>
-                <h3 className="text-2xl font-bold gradient-heading mb-3">{feature.title}</h3>
-                <p className="text-base text-slate-200">{feature.description}</p>
+                <h3 className="text-xl sm:text-2xl font-bold gradient-heading mb-2 sm:mb-3">{feature.title}</h3>
+                <p className="text-sm sm:text-base text-slate-200 leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>

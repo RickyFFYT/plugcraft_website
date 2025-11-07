@@ -1,6 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Mobile-first responsive typography and spacing */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    @apply text-base;
+  }
+  
+  /* Add xs breakpoint for extra small devices */
+  @screen xs {
+    html {
+      font-size: 14px;
+    }
+  }
+}
+
+/* Touch optimization utilities */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
 /* Global UI helpers moved from pages/index.tsx to avoid styled-jsx parsing issues */
 /* Consolidated liquid-glass base for cards */
 .glass-card {
@@ -22,6 +55,14 @@
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   }
+  
+/* Mobile-optimized glass cards */
+@media (max-width: 640px) {
+  .glass-card {
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+  }
+}
 
   /* Simple card hover effect for plan/info cards */
   .simple-card-hover {
