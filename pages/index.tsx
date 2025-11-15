@@ -1,6 +1,5 @@
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useUser } from '@supabase/auth-helpers-react'
 import SEO from '../components/SEO'
 import Card3DRotate from '../components/Card3DRotate'
@@ -95,10 +94,10 @@ export default function Home() {
         const res = await fetch('/api/admin/settings')
         if (!res.ok) return
         const j = await res.json()
-        const d = (j.settings || []).find((s: any) => s.key === 'discord_link')
-        const val = d?.value || d?.value?.value || null
+        const d = (j.settings || []).find((s: { key?: string; value?: string | { value?: string } }) => s.key === 'discord_link')
+        const val = typeof d?.value === 'string' ? d.value : (d?.value as { value?: string })?.value || null
         if (mounted) setDiscordLink(val)
-      } catch (e) {
+      } catch {
         // ignore
       }
     })()
@@ -114,7 +113,9 @@ export default function Home() {
     try {
       root.style.setProperty('--mouse-x', `${Math.round(x * 100)}%`);
       root.style.setProperty('--mouse-y', `${Math.round(y * 100)}%`);
-    } catch (err) {}
+    } catch {
+      // ignore
+    }
   }
 
   return (
@@ -171,7 +172,7 @@ export default function Home() {
   </div>
   <div className="relative w-full max-w-3xl mx-auto glass-panel p-10 rounded-3xl shadow-xl flex flex-col items-center text-center">
     <h1 className="text-5xl sm:text-6xl font-extrabold gradient-heading mb-6">Dominate Every Match with Ghosted</h1>
-    <p className="text-lg text-slate-200 mb-8">The most advanced lagswitch software trusted by competitive gamers. Zero detection, instant activation, and a beautiful interface that doesn't compromise on performance.</p>
+    <p className="text-lg text-slate-200 mb-8">The most advanced lagswitch software trusted by competitive gamers. Zero detection, instant activation, and a beautiful interface that doesn&apos;t compromise on performance.</p>
     <div className="flex flex-col sm:flex-row gap-4 justify-center">
   <Link href={user ? '/dashboard' : '/signup'} className="btn-primary text-center text-lg px-8 py-4"><span>{user ? 'Open dashboard' : 'Start Free Trial'}</span></Link>
   <Link href="#features" className="btn-ghost text-center text-lg px-8 py-4"><span>See How It Works</span></Link>
@@ -195,7 +196,7 @@ export default function Home() {
     <div className="mx-auto max-w-5xl text-center">
           <h2 className="text-3xl font-bold text-white mb-4 animate-fade-in">Choose Your Path to Victory</h2>
           <p className="text-lg text-slate-300 mb-8 animate-fade-in delay-100 max-w-3xl mx-auto">
-            Start free and upgrade when you're ready. All plans include our proprietary stealth technology and 24/7 support.
+            Start free and upgrade when you&apos;re ready. All plans include our proprietary stealth technology and 24/7 support.
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-8 animate-fade-in delay-200" style={{ perspective: '1000px' }}>
           <Card3DRotate className="glass-panel p-8 rounded-2xl w-full md:w-1/2">
@@ -378,7 +379,7 @@ export default function Home() {
             
             <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
               <p className="text-sm text-slate-300 leading-relaxed">
-                <strong className="text-white">📺 What you'll learn:</strong><br/>
+                <strong className="text-white">📺 What you&apos;ll learn:</strong><br/>
                 • Installing Ghosted on your system<br/>
                           <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-primary inline-flex items-center rounded-md px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-indigo-400"><span>Join Discord for Support & Purchase</span></a>
                           <a href={discordLink || 'https://discord.gg/S7PsbJ2e'} target="_blank" rel="noopener noreferrer" className="btn-ghost inline-flex items-center rounded-md border border-white/30 px-6 py-3 text-base font-semibold text-white/80 transition hover:border-white/60 hover:text-white"><span>Public Discord: {discordLink ? new URL(discordLink).pathname.replace('/', '') : 'S7PsbJ2e'}</span></a>

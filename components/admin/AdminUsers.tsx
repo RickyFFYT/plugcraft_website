@@ -17,12 +17,12 @@ interface UserRow {
     window_seconds?: number
     window_start?: string | null
   } | null
-  recent_usage?: Array<{ type: string; amount: number; created_at: string; meta?: any }> | null
+  recent_usage?: Array<{ type: string; amount: number; created_at: string; meta?: Record<string, unknown> }> | null
 }
 
 interface Props {
   users: UserRow[]
-  onAction: (action: string, userId: string, extra?: any) => void
+  onAction: (action: string, userId: string, extra?: Record<string, unknown>) => void
 }
 
 export default function AdminUsers({ users, onAction }: Props) {

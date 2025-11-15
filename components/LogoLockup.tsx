@@ -22,7 +22,6 @@ type LogoLockupProps = {
  */
 export default function LogoLockup({
   markSrc,
-  wordmarkSrc,
   markAlt = 'Ghosted logo',
   wordmarkAlt = 'Ghosted — lagswitch software',
   className = '',

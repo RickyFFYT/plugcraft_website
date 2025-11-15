@@ -32,7 +32,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!email) return res.status(400).json({ error: 'Missing email' })
 
   const ip = getClientIp(req)
-  const redirect = getAuthRedirectUrl('/verify?method=magic')
 
   try {
     const since = new Date(Date.now() - WINDOW_MS).toISOString()
@@ -44,8 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .order('created_at', { ascending: false })
       .limit(100)
 
-    const failedByEmail = (recent || []).filter((r: any) => !r.success).length
-    const failedByIp = (recent || []).filter((r: any) => String(r.ip) === String(ip) && !r.success).length
+    const failedByEmail = (recent || []).filter((r: { success?: boolean }) => !r.success).length
+    const failedByIp = (recent || []).filter((r: { ip?: string; success?: boolean }) => String(r.ip) === String(ip) && !r.success).length
 
     if (failedByEmail >= EMAIL_OTP_LIMIT) return res.status(429).json({ error: 'Too many requests for this account. Please wait and try again.' })
     if (failedByIp >= IP_OTP_LIMIT) return res.status(429).json({ error: 'Too many requests from this IP. Please wait and try again.' })
@@ -60,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (urlParsed.origin !== EMAIL_SITE) {
           return res.status(400).json({ error: 'Invalid redirect specified' })
         }
-      } catch (err) {
+      } catch {
         return res.status(400).json({ error: 'Invalid redirect format' })
       }
       emailRedirectTo = providedRedirect
@@ -78,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (error) return res.status(500).json({ error: error.message || 'Failed to send link' })
     return res.status(200).json({ data })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('OTP send error (server):', err)
     return res.status(500).json({ error: 'Internal server error' })
   }

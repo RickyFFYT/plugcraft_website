@@ -27,8 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Check global site settings for software lock
   const { data: settings } = await supabaseAdmin.from('site_settings').select('key,value').in('key', ['software_locked','current_version'])
-  const lockedRow = (settings || []).find((s: any) => s.key === 'software_locked')
-  const currentVersionRow = (settings || []).find((s: any) => s.key === 'current_version')
+  const lockedRow = (settings || []).find((s: { key?: string; value?: { value?: boolean } }) => s.key === 'software_locked')
+  const currentVersionRow = (settings || []).find((s: { key?: string; value?: { value?: string } }) => s.key === 'current_version')
   const isLocked = !!(lockedRow?.value?.value)
   const currentVersion = currentVersionRow?.value?.value || null
   if (isLocked) {
@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Calculate usage
   const { data: usageRows } = await supabaseAdmin.from('usage').select('amount').eq('profile_id', profile.id)
-  const totalUsed = (usageRows || []).reduce((s: number, r: any) => s + (r.amount || 0), 0)
+  const totalUsed = (usageRows || []).reduce((s: number, r: { amount?: number }) => s + (r.amount || 0), 0)
   const quota = profile.quota_limit ?? 0
   if (quota > 0 && totalUsed >= quota) return res.status(403).json({ error: 'Quota exceeded' })
 

@@ -65,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     return res.status(200).json({ data })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Signup error (server):', err)
     return res.status(500).json({ error: 'Internal server error' })
   }

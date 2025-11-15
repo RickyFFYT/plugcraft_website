@@ -20,18 +20,18 @@ async function getAdminProfile(req: NextApiRequest) {
   if (!token) return null
 
   // Try to validate token with anon client first, then fall back to admin client
-  let user: any = null
+  let user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null = null
   try {
     const { data } = await supabaseAnon.auth.getUser(token)
     if (data?.user) user = data.user
-  } catch (err) {
+  } catch {
     // ignore
   }
   if (!user) {
     try {
       const { data } = await supabaseAdmin.auth.getUser(token)
       if (data?.user) user = data.user
-    } catch (err) {
+    } catch {
       // ignore
     }
   }
@@ -125,24 +125,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { data: profiles } = await supabaseAdmin.from('profiles').select('user_id, full_name, is_admin, disabled, last_login, id, quota_limit, banned_until, ban_reason')
 
       // Fetch usage window rows for profiles
-      const profileIds = (profiles || []).map((p: any) => p.id).filter(Boolean)
-      let usageWindows: any[] = []
+      const profileIds = (profiles || []).map((p: { id?: string }) => p.id).filter(Boolean)
+      let usageWindows: Array<Record<string, unknown>> = []
       if (profileIds.length > 0) {
-        const { data: uw } = await supabaseAdmin.from('usage_windows').select('user_id, total_used_seconds, max_usage_seconds, window_seconds, window_start').in('user_id', profileIds as any)
+        const { data: uw } = await supabaseAdmin.from('usage_windows').select('user_id, total_used_seconds, max_usage_seconds, window_seconds, window_start').in('user_id', profileIds as string[])
         usageWindows = uw || []
       }
 
       // Fetch recent usage events for these profiles (limit 100)
-      let recentUsage: any[] = []
+      let recentUsage: Array<Record<string, unknown>> = []
       if (profileIds.length > 0) {
-        const { data: urows } = await supabaseAdmin.from('usage').select('profile_id, type, amount, meta, created_at').in('profile_id', profileIds as any).order('created_at', { ascending: false }).limit(200)
+        const { data: urows } = await supabaseAdmin.from('usage').select('profile_id, type, amount, meta, created_at').in('profile_id', profileIds as string[]).order('created_at', { ascending: false }).limit(200)
         recentUsage = urows || []
       }
 
-      const merged = users.map((u: any) => {
-        const p = (profiles || []).find((pp: any) => pp.user_id === u.id) || null
-        const uw = p?.id ? (usageWindows || []).find((w: any) => w.user_id === p.id) : null
-        const recent = (recentUsage || []).filter((r: any) => r.profile_id === p?.id).slice(0, 5)
+      const merged = users.map((u: { id: string; email?: string; last_sign_in_at?: string; created_at?: string }) => {
+        const p = (profiles || []).find((pp: { user_id?: string }) => pp.user_id === u.id) || null
+        const uw = p?.id ? (usageWindows || []).find((w: Record<string, unknown>) => w.user_id === p.id) : null
+        const recent = (recentUsage || []).filter((r: Record<string, unknown>) => r.profile_id === (p as Record<string, unknown>)?.id).slice(0, 5)
         return {
           id: u.id,
           email: u.email,
@@ -173,7 +173,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (pErr) return res.status(500).json({ error: pErr.message })
         if (!profileRow) return res.status(404).json({ error: 'Profile not found' })
 
-        const updates: any = {}
+        const updates: Record<string, unknown> = {}
         if (until) {
           updates.banned_until = until
         } else {
@@ -234,7 +234,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (pErr) return res.status(500).json({ error: pErr.message })
         if (!profileRow) return res.status(404).json({ error: 'Profile not found' })
         // Upsert into usage_windows using user_id = profile.id
-        const { data: uw, error: uwErr } = await supabaseAdmin.from('usage_windows').upsert({ user_id: profileRow.id, max_usage_seconds, window_seconds }).select().maybeSingle()
+        const { error: uwErr } = await supabaseAdmin.from('usage_windows').upsert({ user_id: profileRow.id, max_usage_seconds, window_seconds }).select().maybeSingle()
         if (uwErr) return res.status(500).json({ error: uwErr.message })
         await supabaseAdmin.from('admin_audit').insert([{ admin_id: profile.id, action: 'set_window', target_id: profileRow.id, details: { max_usage_seconds, window_seconds } }])
         return res.status(200).json({ success: true })
@@ -245,7 +245,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.setHeader('Allow', 'GET, POST')
     return res.status(405).json({ error: 'Method not allowed' })
-  } catch (err: any) {
-    return res.status(500).json({ error: err?.message || 'Server error' })
+  } catch (err: unknown) {
+    return res.status(500).json({ error: (err as Error)?.message || 'Server error' })
   }
 }

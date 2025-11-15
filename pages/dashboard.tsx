@@ -24,8 +24,8 @@ function DashboardContent() {
   const downloadUrl = 'https://mega.nz/folder/9cxgHL7a#-IdZCF_duekyBp5w-lMWoQ'
   const [profileName, setProfileName] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
-  const [announcementsList, setAnnouncementsList] = useState<any[]>([])
-  const [latestRelease, setLatestRelease] = useState<any>(null)
+  const [announcementsList, setAnnouncementsList] = useState<Array<{ id: string; title: string; body: string }>>([])
+  const [latestRelease, setLatestRelease] = useState<{ download_url?: string; version?: string } | null>(null)
   const [discordLink, setDiscordLink] = useState<string | null>(null)
   const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(true)
   const [isLoadingSettings, setIsLoadingSettings] = useState(true)
@@ -75,7 +75,7 @@ function DashboardContent() {
         url.searchParams.delete('trusted')
         window.history.replaceState({}, document.title, url.pathname + url.search)
       }
-    } catch (e) {
+    } catch {
       // non-fatal
     }
   }, [user])
@@ -88,7 +88,7 @@ function DashboardContent() {
         const res = await fetch('/api/admin/check', { cache: 'no-store', headers: { Authorization: `Bearer ${session.access_token}` } })
         const j = await res.json()
         setIsAdmin(!!j.isAdmin)
-      } catch (e) {
+      } catch {
         setIsAdmin(false)
       }
     })()
@@ -103,7 +103,7 @@ function DashboardContent() {
         if (!res.ok) return
         const j = await res.json()
         setAnnouncementsList(j.announcements || [])
-      } catch (e) {
+      } catch {
         // ignore
       } finally {
         setIsLoadingAnnouncements(false)
@@ -119,12 +119,12 @@ function DashboardContent() {
         const res = await fetch('/api/admin/settings')
         if (!res.ok) return
         const j = await res.json()
-  const release = (j.settings || []).find((s: any) => s.key === 'latest_release')
+  const release = (j.settings || []).find((s: { key?: string; value?: { download_url?: string } }) => s.key === 'latest_release')
   setLatestRelease(release?.value || null)
-  const d = (j.settings || []).find((s: any) => s.key === 'discord_link')
-  const dv = d?.value || d?.value?.value || null
+  const d = (j.settings || []).find((s: { key?: string; value?: string | { value?: string } }) => s.key === 'discord_link')
+  const dv = typeof d?.value === 'string' ? d.value : (d?.value as { value?: string })?.value || null
   setDiscordLink(dv)
-      } catch (e) {
+      } catch {
         // ignore
       } finally {
         setIsLoadingSettings(false)
@@ -134,10 +134,6 @@ function DashboardContent() {
 
   const getDownloadUrl = () => {
     return latestRelease?.download_url || downloadUrl
-  }
-  const handleDownload = () => {
-    const url = getDownloadUrl()
-    window.open(url, '_blank', 'noopener')
   }
 
   return (
@@ -201,7 +197,7 @@ function DashboardContent() {
                   <p className="text-sm text-slate-300">No announcements</p>
                  ) : (
                    <ul className="space-y-3">
-                     {announcementsList.map((a: any) => (
+                     {announcementsList.map(( a: { id: string; title: string; body: string }) => (
                       <li key={a.id} className="p-4 rounded-lg">
                         <div className="text-lg font-semibold gradient-heading leading-tight">{a.title}</div>
                         <div className="mt-2 text-base text-slate-200 leading-relaxed">{a.body}</div>

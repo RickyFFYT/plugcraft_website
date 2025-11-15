@@ -11,7 +11,7 @@ interface Announcement {
 interface Props {
   announcements: Announcement[]
   newAnnouncement: { title: string; body: string; starts_at: string; ends_at: string }
-  onChangeNew: (next: any) => void
+  onChangeNew: (next: { title: string; body: string; starts_at: string; ends_at: string }) => void
   onCreate: (e: React.FormEvent) => void
   onEdit: (id: string, newBody: string) => void
   onDelete: (id: string) => void

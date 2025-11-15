@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -88,18 +87,18 @@ export default function LoginPage() {
       })
 
       interface SignInResponse {
-        data?: { user?: { id?: string; email_confirmed_at?: string }; session?: Record<string, unknown> }
+        data?: { user?: { id?: string; email_confirmed_at?: string }; session?: { access_token: string; refresh_token: string } }
         error?: { message?: string }
       }
       let signinJson: SignInResponse | null = null
       try {
         signinJson = await signinResp.json()
-      } catch (_) {
+      } catch {
         signinJson = null
       }
 
       if (!signinResp.ok) {
-        setFeedback({ type: 'error', message: signinJson?.error || 'Sign in failed' })
+        setFeedback({ type: 'error', message: signinJson?.error?.message || 'Sign in failed' })
         setLoading(false)
         return
       }
@@ -128,10 +127,10 @@ export default function LoginPage() {
             setLoading(false)
             return
           }
-        } catch (e) {
+        } catch {
           // Ignore storage errors
         }
-        setFeedback({ type: 'error', message: signinJson?.error || 'Sign in failed' })
+        setFeedback({ type: 'error', message: signinJson?.error?.message || 'Sign in failed' })
         setLoading(false)
         return
       }
@@ -202,7 +201,7 @@ export default function LoginPage() {
       // Standard verified password flow — user is signed in and verified
       router.replace('/dashboard')
     } catch (err: unknown) {
-      setFeedback({ type: 'error', message: err?.message || 'Sign in failed' })
+      setFeedback({ type: 'error', message: (err as Error)?.message || 'Sign in failed' })
     } finally {
       setLoading(false)
     }

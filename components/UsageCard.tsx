@@ -46,9 +46,9 @@ export default function UsageCard() {
           setWindowInfo(null)
           return
         }
-        const newRow = payload.new as any
+        const newRow = payload.new as { total_used_seconds?: number; max_usage_seconds?: number; window_start?: string; window_seconds?: number; paused_seconds?: number }
         if (newRow) {
-          setWindowInfo(newRow)
+          setWindowInfo(newRow as { total_used_seconds: number; max_usage_seconds: number; window_start: string | null; window_seconds: number; paused_seconds?: number | null })
           if (newRow.window_start) {
             const start = new Date(newRow.window_start).getTime()
             const end = start + (Number(newRow.window_seconds || 0) * 1000)
@@ -57,20 +57,21 @@ export default function UsageCard() {
             setTimeLeft(null)
           }
         }
-      } catch (e) {
+      } catch {
         // swallow
       }
     })
     // Also listen for new usage_sessions to refresh the total or timeline
-    channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'usage_sessions', filter: `user_id=eq.${user.id}` }, (payload) => {
+    channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'usage_sessions', filter: `user_id=eq.${user.id}` }, () => {
       // On new sessions, refresh the precomputed window info
       fetchData()
     })
 
     channel.subscribe()
     return () => {
-      try { supabase.removeChannel(channel) } catch (e) { /* ignore */ }
+      try { supabase.removeChannel(channel) } catch { /* ignore */ }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   // Refresh on window focus so user returns see fresh values
@@ -79,6 +80,7 @@ export default function UsageCard() {
     const onFocus = () => fetchData()
     window.addEventListener('focus', onFocus)
     return () => window.removeEventListener('focus', onFocus)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   const fetchData = async () => {
@@ -149,7 +151,13 @@ export default function UsageCard() {
         if (windowError) {
           console.debug('[UsageCard] usage_windows fetch error', windowError)
         } else if (windowData) {
-          setWindowInfo(windowData as any)
+          setWindowInfo({
+            total_used_seconds: windowData.total_used_seconds ?? 0,
+            max_usage_seconds: windowData.max_usage_seconds ?? 0,
+            window_start: windowData.window_start ?? null,
+            window_seconds: windowData.window_seconds ?? 0,
+            paused_seconds: windowData.paused_seconds ?? null
+          })
           // compute initial timeLeft if window has a start
           if (windowData?.window_start) {
             const start = new Date(windowData.window_start).getTime()
@@ -162,9 +170,9 @@ export default function UsageCard() {
       } catch (e) {
         console.debug('[UsageCard] unexpected error fetching usage_windows', e)
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[UsageCard] Error loading profile/usage:', err)
-      setError(err?.message || 'Failed to load usage')
+      setError((err as Error)?.message || 'Failed to load usage')
       setProfile(null)
       setUsage([])
       setTotalUsed(0)

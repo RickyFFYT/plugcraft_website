@@ -33,8 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data, error } = await supabaseAdmin.rpc('record_session', { p_user_id: userId, p_start: p_start, p_end: p_end, p_duration_seconds: duration_seconds })
     if (error) return res.status(500).json({ error: error.message })
     return res.status(200).json({ ok: true, data })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('record-session error', err)
-    return res.status(500).json({ error: err?.message || 'Unknown error' })
+    return res.status(500).json({ error: (err as Error)?.message || 'Unknown error' })
   }
 }
