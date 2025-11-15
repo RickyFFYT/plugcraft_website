@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { extractErrorMessage } from '../../../lib/utils'
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -42,7 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Get user from token
-    let user: any = null
+    type SupabaseUser = { id?: string; email?: string | null; user_metadata?: { full_name?: string } }
+    let user: SupabaseUser | null = null
     try {
       const { data } = await supabaseAdmin.auth.getUser(token)
       if (data?.user) user = data.user
@@ -108,8 +110,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       email,
       userId,
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Bootstrap error:', err)
-    return res.status(500).json({ error: err?.message || 'Server error' })
+    const msg = extractErrorMessage(err)
+    return res.status(500).json({ error: msg || 'Server error' })
   }
 }

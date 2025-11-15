@@ -44,8 +44,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .order('created_at', { ascending: false })
       .limit(100)
 
-    const failedByEmail = (recent || []).filter((r: any) => !r.success).length
-    const failedByIp = (recent || []).filter((r: any) => String(r.ip) === String(ip) && !r.success).length
+    type AuthAttemptRow = { id?: string; success?: boolean; ip?: string | null; created_at?: string }
+    const recentAttempts = (recent || []) as AuthAttemptRow[]
+    const failedByEmail = recentAttempts.filter((r) => !r.success).length
+    const failedByIp = recentAttempts.filter((r) => String(r.ip) === String(ip) && !r.success).length
 
     if (failedByEmail >= EMAIL_OTP_LIMIT) return res.status(429).json({ error: 'Too many requests for this account. Please wait and try again.' })
     if (failedByIp >= IP_OTP_LIMIT) return res.status(429).json({ error: 'Too many requests from this IP. Please wait and try again.' })
@@ -78,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (error) return res.status(500).json({ error: error.message || 'Failed to send link' })
     return res.status(200).json({ data })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('OTP send error (server):', err)
     return res.status(500).json({ error: 'Internal server error' })
   }

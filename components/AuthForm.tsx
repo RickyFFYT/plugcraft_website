@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import type { Session, User } from '@supabase/supabase-js'
+import { extractErrorMessage } from '../lib/utils'
 import { supabase, getAuthRedirectUrl } from '../lib/supabase'
 
 interface AuthFormProps {
@@ -12,9 +14,11 @@ export default function AuthForm({ type }: AuthFormProps) {
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null)
 
-  const isEmailVerified = (user: any) => {
+  const isEmailVerified = (user: unknown) => {
     // Support both Supabase fields that may be present depending on versions
-    return Boolean(user?.email_confirmed_at || user?.confirmed_at)
+    if (!user || typeof user !== 'object') return false
+    const u = user as { email_confirmed_at?: string | null; confirmed_at?: string | null }
+    return Boolean(u.email_confirmed_at || u.confirmed_at)
   }
 
   const validatePassword = (p: string) => {
@@ -62,7 +66,8 @@ export default function AuthForm({ type }: AuthFormProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email.trim(), password }),
         })
-        const signinJson: any = await signinResp.json().catch(() => null)
+        type SignInResp = { data?: { session?: Session | null; user?: User | null }; error?: string }
+        const signinJson = (await signinResp.json().catch(() => null)) as SignInResp | null
         if (!signinResp.ok) {
           setFeedback({ type: 'error', message: signinJson?.error || 'Failed to sign in' })
         } else {
@@ -83,8 +88,9 @@ export default function AuthForm({ type }: AuthFormProps) {
           }
         }
       }
-    } catch (err: any) {
-      setFeedback({ type: 'error', message: err?.message || 'Authentication failed' })
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err)
+      setFeedback({ type: 'error', message: msg || 'Authentication failed' })
     } finally {
       setLoading(false)
     }

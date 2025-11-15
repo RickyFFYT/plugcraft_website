@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { extractErrorMessage } from '../../../lib/utils'
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -66,7 +67,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.setHeader('Allow', 'GET, POST')
     return res.status(405).json({ error: 'Method not allowed' })
-  } catch (err: any) {
-    return res.status(500).json({ error: err?.message || 'Server error' })
+  } catch (err: unknown) {
+    const msg = extractErrorMessage(err)
+    return res.status(500).json({ error: msg || 'Server error' })
   }
 }

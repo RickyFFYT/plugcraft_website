@@ -1,17 +1,10 @@
 import React from 'react'
-
-interface Announcement {
-  id: string
-  title: string
-  body: string
-  starts_at?: string
-  ends_at?: string
-}
+import type { Announcement, NewAnnouncement } from '../../lib/types'
 
 interface Props {
   announcements: Announcement[]
-  newAnnouncement: { title: string; body: string; starts_at: string; ends_at: string }
-  onChangeNew: (next: any) => void
+  newAnnouncement: NewAnnouncement
+  onChangeNew: (next: NewAnnouncement) => void
   onCreate: (e: React.FormEvent) => void
   onEdit: (id: string, newBody: string) => void
   onDelete: (id: string) => void

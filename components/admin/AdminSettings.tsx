@@ -1,19 +1,29 @@
 import React from 'react'
+import type { SiteSetting } from '../../lib/types'
 
 interface Props {
-  settings: any[]
+  settings: SiteSetting[]
   onToggleLock: () => void
-  onSave?: (key: string, value: any) => Promise<void>
+  onSave?: (key: string, value: unknown) => Promise<void>
 }
 
 export default function AdminSettings({ settings, onToggleLock, onSave }: Props) {
-  const locked = settings.find((s: any) => s.key === 'software_locked')?.value?.value || false
-  const version = settings.find((s: any) => s.key === 'current_version')?.value?.value || '0.0.0'
+  const getSetting = <T,>(key: string, fallback: T): T => {
+    const s = settings.find((s) => s.key === key)
+    if (!s || s.value === undefined || s.value === null) return fallback
+    const v = s.value as unknown
+    if (typeof v === 'object' && v !== null && 'value' in (v as object)) {
+      return (v as Record<string, unknown>)['value'] as T
+    }
+    return v as T
+  }
+
+  const locked = getSetting<boolean>('software_locked', false)
+  const version = getSetting<string>('current_version', '0.0.0')
   const [newVersion, setNewVersion] = React.useState('')
   const [forceShutdown, setForceShutdown] = React.useState(false)
   const [message, setMessage] = React.useState<string | null>(null)
-  const discordVal = settings.find((s: any) => s.key === 'discord_link')
-  const initialDiscord = discordVal?.value?.value || discordVal?.value || ''
+  const initialDiscord = getSetting<string>('discord_link', '')
   const [discordLink, setDiscordLink] = React.useState(initialDiscord)
 
   return (
@@ -37,7 +47,7 @@ export default function AdminSettings({ settings, onToggleLock, onSave }: Props)
               try {
                 await onSave('discord_link', discordLink)
                 setMessage('Saved')
-              } catch (e: any) {
+              } catch (e: unknown) {
                 setMessage('Save failed')
               }
             }} className="ml-2 px-3 py-1 rounded bg-emerald-600 text-white">Save</button>

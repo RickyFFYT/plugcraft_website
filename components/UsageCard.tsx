@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { extractErrorMessage } from '../lib/utils'
 import { supabase } from '../lib/supabase'
 import { useUser } from '@supabase/auth-helpers-react'
+import type { ProfileRow, UsageRow, UsageWindowRow } from '../lib/types'
 
 interface Profile {
   id: string
@@ -19,13 +21,7 @@ export default function UsageCard() {
   const [totalUsed, setTotalUsed] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [windowInfo, setWindowInfo] = useState<{
-    total_used_seconds: number
-    max_usage_seconds: number
-    window_start: string | null
-    window_seconds: number
-    paused_seconds?: number | null
-  } | null>(null)
+  const [windowInfo, setWindowInfo] = useState<UsageWindowRow | null>(null)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
 
   useEffect(() => {
@@ -46,7 +42,7 @@ export default function UsageCard() {
           setWindowInfo(null)
           return
         }
-        const newRow = payload.new as any
+        const newRow = payload.new as UsageWindowRow
         if (newRow) {
           setWindowInfo(newRow)
           if (newRow.window_start) {
@@ -149,7 +145,7 @@ export default function UsageCard() {
         if (windowError) {
           console.debug('[UsageCard] usage_windows fetch error', windowError)
         } else if (windowData) {
-          setWindowInfo(windowData as any)
+          setWindowInfo(windowData as UsageWindowRow)
           // compute initial timeLeft if window has a start
           if (windowData?.window_start) {
             const start = new Date(windowData.window_start).getTime()
@@ -162,9 +158,10 @@ export default function UsageCard() {
       } catch (e) {
         console.debug('[UsageCard] unexpected error fetching usage_windows', e)
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[UsageCard] Error loading profile/usage:', err)
-      setError(err?.message || 'Failed to load usage')
+      const msg = extractErrorMessage(err)
+      setError(msg || 'Failed to load usage')
       setProfile(null)
       setUsage([])
       setTotalUsed(0)

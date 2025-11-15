@@ -1,4 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { extractErrorMessage } from '../../../lib/utils'
+import type { ProfileRow, UsageWindowRow, UsageRow } from '../../../lib/types'
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -20,7 +22,8 @@ async function getAdminProfile(req: NextApiRequest) {
   if (!token) return null
 
   // Try to validate token with anon client first, then fall back to admin client
-  let user: any = null
+  type SupabaseUser = { id?: string; email?: string | null; user_metadata?: { full_name?: string } }
+  let user: SupabaseUser | null = null
   try {
     const { data } = await supabaseAnon.auth.getUser(token)
     if (data?.user) user = data.user
@@ -125,24 +128,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { data: profiles } = await supabaseAdmin.from('profiles').select('user_id, full_name, is_admin, disabled, last_login, id, quota_limit, banned_until, ban_reason')
 
       // Fetch usage window rows for profiles
-      const profileIds = (profiles || []).map((p: any) => p.id).filter(Boolean)
-      let usageWindows: any[] = []
+      const profileIds = (profiles || []).map((p: ProfileRow) => p.id).filter(Boolean) as (string | number)[]
+      let usageWindows: UsageWindowRow[] = []
       if (profileIds.length > 0) {
-        const { data: uw } = await supabaseAdmin.from('usage_windows').select('user_id, total_used_seconds, max_usage_seconds, window_seconds, window_start').in('user_id', profileIds as any)
+        const { data: uw } = await supabaseAdmin.from('usage_windows').select('user_id, total_used_seconds, max_usage_seconds, window_seconds, window_start').in('user_id', profileIds)
         usageWindows = uw || []
       }
 
       // Fetch recent usage events for these profiles (limit 100)
-      let recentUsage: any[] = []
+      let recentUsage: UsageRow[] = []
       if (profileIds.length > 0) {
-        const { data: urows } = await supabaseAdmin.from('usage').select('profile_id, type, amount, meta, created_at').in('profile_id', profileIds as any).order('created_at', { ascending: false }).limit(200)
+        const { data: urows } = await supabaseAdmin.from('usage').select('profile_id, type, amount, meta, created_at').in('profile_id', profileIds).order('created_at', { ascending: false }).limit(200)
         recentUsage = urows || []
       }
 
-      const merged = users.map((u: any) => {
-        const p = (profiles || []).find((pp: any) => pp.user_id === u.id) || null
-        const uw = p?.id ? (usageWindows || []).find((w: any) => w.user_id === p.id) : null
-        const recent = (recentUsage || []).filter((r: any) => r.profile_id === p?.id).slice(0, 5)
+      const merged = users.map((u: { id: string; email?: string | null; last_sign_in_at?: string | null; created_at?: string | null }) => {
+        const p = (profiles || []).find((pp: ProfileRow) => pp.user_id === u.id) || null
+        const uw = p?.id ? (usageWindows || []).find((w: UsageWindowRow) => w.user_id === p.id) : null
+        const recent = (recentUsage || []).filter((r: UsageRow) => r.profile_id === p?.id).slice(0, 5)
         return {
           id: u.id,
           email: u.email,
@@ -173,7 +176,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (pErr) return res.status(500).json({ error: pErr.message })
         if (!profileRow) return res.status(404).json({ error: 'Profile not found' })
 
-        const updates: any = {}
+        const updates: Record<string, unknown> = {}
         if (until) {
           updates.banned_until = until
         } else {
@@ -245,7 +248,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.setHeader('Allow', 'GET, POST')
     return res.status(405).json({ error: 'Method not allowed' })
-  } catch (err: any) {
-    return res.status(500).json({ error: err?.message || 'Server error' })
+  } catch (err: unknown) {
+    const msg = extractErrorMessage(err)
+    return res.status(500).json({ error: msg || 'Server error' })
   }
 }

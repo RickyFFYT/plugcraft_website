@@ -36,6 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const since = new Date(Date.now() - WINDOW_MS).toISOString()
     // Check recent failed attempts for this email and IP
+    type AuthAttemptRow = { id?: string; success?: boolean; ip?: string | null; created_at?: string }
     const { data: recentEmailAttempts } = await supabaseAdmin
       .from('auth_attempts')
       .select('id, success, ip, created_at')
@@ -44,8 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .order('created_at', { ascending: false })
       .limit(100)
 
-    const failedByEmail = (recentEmailAttempts || []).filter((r: any) => !r.success).length
-    const failedByIp = (recentEmailAttempts || []).filter((r: any) => String(r.ip) === String(ip) && !r.success).length
+    const recentAttempts = (recentEmailAttempts || []) as AuthAttemptRow[]
+    const failedByEmail = recentAttempts.filter((r) => !r.success).length
+    const failedByIp = recentAttempts.filter((r) => String(r.ip) === String(ip) && !r.success).length
 
     if (failedByEmail >= EMAIL_ATTEMPT_LIMIT) return res.status(429).json({ error: 'Too many attempts for this account. Please wait and try again.' })
     if (failedByIp >= IP_ATTEMPT_LIMIT) return res.status(429).json({ error: 'Too many attempts from this IP. Please wait and try again.' })
@@ -64,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     return res.status(200).json({ data })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Sign-in error (server):', err)
     return res.status(500).json({ error: 'Internal server error' })
   }

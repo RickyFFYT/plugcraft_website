@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
+import { extractErrorMessage } from '../../../lib/utils'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -54,7 +55,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (error) return res.status(500).json({ error: error.message })
 
       // Filter active announcements
-      const active = (data || []).filter((a: any) => {
+      type AnnouncementRow = { id?: number | string; title?: string; body?: string; starts_at?: string | null; ends_at?: string | null }
+      const active = (data || []).filter((a: AnnouncementRow) => {
         const starts = a.starts_at ? new Date(a.starts_at).toISOString() <= now : true
         const ends = a.ends_at ? new Date(a.ends_at).toISOString() > now : true
         return starts && ends
@@ -86,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'PUT') {
       const { id, title, body, starts_at, ends_at } = req.body
       if (!id) return res.status(400).json({ error: 'Missing id' })
-      const updates: any = {}
+      const updates: Record<string, unknown> = {}
       if (title !== undefined) updates.title = title
       if (body !== undefined) updates.body = body
       if (starts_at !== undefined) updates.starts_at = starts_at
@@ -113,7 +115,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.setHeader('Allow', 'GET, POST, PUT, DELETE')
     return res.status(405).json({ error: 'Method not allowed' })
-  } catch (err: any) {
-    return res.status(500).json({ error: err?.message || 'Server error' })
+  } catch (err: unknown) {
+    const msg = extractErrorMessage(err)
+    return res.status(500).json({ error: msg || 'Server error' })
   }
 }

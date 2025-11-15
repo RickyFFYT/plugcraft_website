@@ -1,21 +1,23 @@
 import React, { useMemo, useState } from 'react'
+import { extractErrorMessage } from '../../lib/utils'
+import type { SiteSetting } from '../../lib/types'
 
 interface Props {
-  settings: any[]
-  onSave: (key: string, value: any) => Promise<void>
+  settings: SiteSetting[]
+  onSave: (key: string, value: unknown) => Promise<void>
 }
 
 export default function AdminQuotas({ settings, onSave }: Props) {
   const defaults = useMemo(() => {
-    const dq = (settings || []).find((s: any) => s.key === 'default_quota_limit')
-    const dw = (settings || []).find((s: any) => s.key === 'default_window_seconds')
+    const dq = (settings || []).find((s) => s.key === 'default_quota_limit')
+    const dw = (settings || []).find((s) => s.key === 'default_window_seconds')
     return {
-      default_quota_limit: dq?.value || 100,
-      default_window_seconds: dw?.value || 18000
+      default_quota_limit: String(dq?.value ?? 100),
+      default_window_seconds: String(dw?.value ?? 18000)
     }
   }, [settings])
 
-  const [form, setForm] = useState<any>({ ...defaults })
+  const [form, setForm] = useState<{ default_quota_limit: number | string; default_window_seconds: number | string }>({ ...defaults })
   const [saving, setSaving] = useState(false)
 
   React.useEffect(() => setForm({ ...defaults }), [defaults])
@@ -27,8 +29,9 @@ export default function AdminQuotas({ settings, onSave }: Props) {
       await onSave('default_quota_limit', Number(form.default_quota_limit))
       await onSave('default_window_seconds', Number(form.default_window_seconds))
       alert('Defaults saved')
-    } catch (err: any) {
-      alert('Save failed: ' + (err?.message || 'unknown'))
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err)
+      alert('Save failed: ' + (msg || 'unknown'))
     } finally {
       setSaving(false)
     }

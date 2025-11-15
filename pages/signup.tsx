@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import SEO from '../components/SEO'
 import AuthCard from '../components/AuthCard'
+import { extractErrorMessage } from '../lib/utils'
 import Image from 'next/image'
 
 export default function SignupPage() {
@@ -88,7 +89,7 @@ export default function SignupPage() {
         }
       } catch (e: unknown) {
         console.error('Unexpected error creating profile row:', e)
-        setFeedback({ type: 'error', message: `Unexpected error creating profile: ${e?.message || e}` })
+        setFeedback({ type: 'error', message: extractErrorMessage(e) || String(e) })
       }
     }
 

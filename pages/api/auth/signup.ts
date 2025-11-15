@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { extractErrorMessage } from '../../../lib/utils'
 import { createClient } from '@supabase/supabase-js'
 import { getAuthRedirectUrl } from '../../../lib/supabase'
 
@@ -65,8 +66,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     return res.status(200).json({ data })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Signup error (server):', err)
-    return res.status(500).json({ error: 'Internal server error' })
+    const msg = extractErrorMessage(err)
+    return res.status(500).json({ error: msg || 'Internal server error' })
   }
 }

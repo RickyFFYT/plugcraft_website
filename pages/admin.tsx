@@ -3,6 +3,7 @@ import Head from 'next/head'
 import ProtectedRoute from '../components/ProtectedRoute'
 import { useSession, useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { AdminTabs, AdminAnnouncements, AdminUsers, AdminSettings, AdminReleases, AdminQuotas } from '../components/admin'
+import type { UserRow, SiteSetting, NewAnnouncement, Release } from '../lib/types'
 
 interface Announcement {
   id: string
@@ -32,10 +33,10 @@ function AdminContent() {
   const [serverCheckWarning, setServerCheckWarning] = useState<string | null>(null)
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [users, setUsers] = useState<any[]>([])
-  const [settings, setSettings] = useState<any[]>([])
+  const [users, setUsers] = useState<UserRow[]>([])
+  const [settings, setSettings] = useState<SiteSetting[]>([])
 
-  const [newAnnouncement, setNewAnnouncement] = useState({ title: '', body: '', starts_at: '', ends_at: '' })
+  const [newAnnouncement, setNewAnnouncement] = useState<NewAnnouncement>({ title: '', body: '', starts_at: '', ends_at: '' })
 
   // Move tabs and activeTab hook here so hooks are called unconditionally
   const tabs = [
@@ -59,10 +60,10 @@ function AdminContent() {
         console.log('[AdminContent] Starting admin check with session:', session)
         // Authoritative server-side admin check. Always call server API rather than relying on
         // client-side table queries to avoid exposing DB to the browser or depending on client keys.
-        let token = (session as any)?.access_token
+        let token = (session as unknown as { access_token?: string })?.access_token
         if (!token) {
           const s = await supabase.auth.getSession()
-          token = (s as any)?.data?.session?.access_token
+          token = (s as unknown as { data?: { session?: { access_token?: string } } })?.data?.session?.access_token
         }
         console.log('[AdminContent] Token extracted:', token ? 'YES (length=' + token.length + ')' : 'NO')
 
@@ -130,10 +131,10 @@ function AdminContent() {
     }
   }
 
-  async function performUserAction(action: string, target_user_id: string, extra?: any) {
+  async function performUserAction(action: string, target_user_id: string, extra?: Record<string, unknown> | null) {
     if (!session) return
     const token = session.access_token
-    const body: any = { action, target_user_id }
+    const body: Record<string, unknown> = { action, target_user_id }
     if (action === 'ban') {
       const reason = extra?.reason ?? prompt('Reason for ban (optional)')
       const until = extra?.until ?? prompt('Ban until (ISO timestamp, optional)')
@@ -143,13 +144,13 @@ function AdminContent() {
 
     if (action === 'set_quota') {
       // extra: { quota: number }
-      body.quota = extra?.quota
+      body.quota = extra?.quota as unknown
     }
 
     if (action === 'set_window') {
       // extra: { max_usage_seconds, window_seconds }
-      body.max_usage_seconds = extra?.max_usage_seconds
-      body.window_seconds = extra?.window_seconds
+      body.max_usage_seconds = extra?.max_usage_seconds as unknown
+      body.window_seconds = extra?.window_seconds as unknown
     }
 
     const res = await fetch('/api/admin/users', {
@@ -168,8 +169,17 @@ function AdminContent() {
   async function toggleLock() {
     if (!session) return
     const token = session.access_token
-    const current = settings.find((s: any) => s.key === 'software_locked')
-    const newValue = { value: !(current?.value?.value || false) }
+    const getSetting = <T,>(key: string, fallback: T): T => {
+      const s = settings.find((s) => s.key === key)
+      if (!s || s.value === undefined || s.value === null) return fallback
+      const v = s.value as unknown
+      if (typeof v === 'object' && v !== null && 'value' in (v as object)) {
+        return (v as Record<string, unknown>)['value'] as T
+      }
+      return v as T
+    }
+    const currentVal = getSetting<boolean>('software_locked', false)
+    const newValue = { value: !currentVal }
     const res = await fetch('/api/admin/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -210,7 +220,7 @@ function AdminContent() {
   }
   
   // Exposed to quota tab to update global defaults
-  async function saveSetting(key: string, value: any) {
+  async function saveSetting(key: string, value: unknown) {
     if (!session) return
     const token = session.access_token
     const res = await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ key, value }) })
@@ -218,12 +228,12 @@ function AdminContent() {
     await loadAll(token)
   }
 
-  async function saveRelease(value: any) {
+  async function saveRelease(value: Release) {
     // Use session token to authorize
-    let token = (session as any)?.access_token
+    let token = (session as unknown as { access_token?: string })?.access_token
     if (!token) {
       const s = await supabase.auth.getSession()
-      token = (s as any)?.data?.session?.access_token
+      token = (s as unknown as { data?: { session?: { access_token?: string } } })?.data?.session?.access_token
     }
     if (!token) throw new Error('Missing token')
 

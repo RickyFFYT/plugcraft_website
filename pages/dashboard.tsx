@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useSession, useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import ProtectedRoute from '../components/ProtectedRoute'
 import UsageCard from '../components/UsageCard'
+import type { Announcement, Release, SiteSetting } from '../lib/types'
 
 export default function DashboardPage() {
   return (
@@ -24,8 +25,8 @@ function DashboardContent() {
   const downloadUrl = 'https://mega.nz/folder/9cxgHL7a#-IdZCF_duekyBp5w-lMWoQ'
   const [profileName, setProfileName] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
-  const [announcementsList, setAnnouncementsList] = useState<any[]>([])
-  const [latestRelease, setLatestRelease] = useState<any>(null)
+  const [announcementsList, setAnnouncementsList] = useState<Announcement[]>([])
+  const [latestRelease, setLatestRelease] = useState<Release | null>(null)
   const [discordLink, setDiscordLink] = useState<string | null>(null)
   const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(true)
   const [isLoadingSettings, setIsLoadingSettings] = useState(true)
@@ -119,11 +120,18 @@ function DashboardContent() {
         const res = await fetch('/api/admin/settings')
         if (!res.ok) return
         const j = await res.json()
-  const release = (j.settings || []).find((s: any) => s.key === 'latest_release')
-  setLatestRelease(release?.value || null)
-  const d = (j.settings || []).find((s: any) => s.key === 'discord_link')
-  const dv = d?.value || d?.value?.value || null
-  setDiscordLink(dv)
+  const settingsArr = j.settings as SiteSetting[] || []
+  const releaseRow = settingsArr.find((s) => s.key === 'latest_release')
+  const latest = releaseRow?.value ? (releaseRow.value as Release) : null
+  setLatestRelease(latest)
+  const d = settingsArr.find((s) => s.key === 'discord_link')
+  const extractVal = (maybe: SiteSetting | undefined | null) => {
+    if (!maybe || maybe.value === undefined || maybe.value === null) return null
+    const v = maybe.value as unknown
+    if (typeof v === 'object' && v !== null && 'value' in (v as object)) return (v as Record<string, unknown>)['value'] as string | null
+    return v as string | null
+  }
+  setDiscordLink(extractVal(d))
       } catch (e) {
         // ignore
       } finally {
@@ -201,7 +209,7 @@ function DashboardContent() {
                   <p className="text-sm text-slate-300">No announcements</p>
                  ) : (
                    <ul className="space-y-3">
-                     {announcementsList.map((a: any) => (
+                    {announcementsList.map((a: Announcement) => (
                       <li key={a.id} className="p-4 rounded-lg">
                         <div className="text-lg font-semibold gradient-heading leading-tight">{a.title}</div>
                         <div className="mt-2 text-base text-slate-200 leading-relaxed">{a.body}</div>

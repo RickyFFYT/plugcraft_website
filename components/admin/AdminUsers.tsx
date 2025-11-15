@@ -1,28 +1,9 @@
 import React, { useMemo, useState } from 'react'
-
-interface UserRow {
-  id: string
-  email: string
-  full_name?: string
-  last_sign_in_at?: string
-  is_admin?: boolean
-  profile_id?: string
-  disabled?: boolean
-  banned_until?: string | null
-  ban_reason?: string | null
-  quota_limit?: number | null
-  usage_window?: {
-    total_used_seconds?: number
-    max_usage_seconds?: number
-    window_seconds?: number
-    window_start?: string | null
-  } | null
-  recent_usage?: Array<{ type: string; amount: number; created_at: string; meta?: any }> | null
-}
+import type { UserRow } from '../../lib/types'
 
 interface Props {
   users: UserRow[]
-  onAction: (action: string, userId: string, extra?: any) => void
+  onAction: (action: string, userId: string, extra?: Record<string, unknown> | null) => void
 }
 
 export default function AdminUsers({ users, onAction }: Props) {
