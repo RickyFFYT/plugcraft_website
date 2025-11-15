@@ -1,19 +1,21 @@
 import React from 'react'
 
 interface Props {
-  settings: any[]
+  settings: Array<{ key: string; value: unknown }>
   onToggleLock: () => void
-  onSave?: (key: string, value: any) => Promise<void>
+  onSave?: (key: string, value: Record<string, unknown> | string) => Promise<void>
 }
 
 export default function AdminSettings({ settings, onToggleLock, onSave }: Props) {
-  const locked = settings.find((s: any) => s.key === 'software_locked')?.value?.value || false
-  const version = settings.find((s: any) => s.key === 'current_version')?.value?.value || '0.0.0'
+  const lockedSetting = settings.find(s => s.key === 'software_locked')
+  const locked = (typeof lockedSetting?.value === 'object' ? (lockedSetting.value as { value?: boolean })?.value : false) || false
+  const versionSetting = settings.find(s => s.key === 'current_version')
+  const version = (typeof versionSetting?.value === 'object' ? (versionSetting.value as { value?: string })?.value : '0.0.0') || '0.0.0'
   const [newVersion, setNewVersion] = React.useState('')
   const [forceShutdown, setForceShutdown] = React.useState(false)
   const [message, setMessage] = React.useState<string | null>(null)
-  const discordVal = settings.find((s: any) => s.key === 'discord_link')
-  const initialDiscord = discordVal?.value?.value || discordVal?.value || ''
+  const discordVal = settings.find(s => s.key === 'discord_link')
+  const initialDiscord = (typeof discordVal?.value === 'string' ? discordVal.value : (discordVal?.value as { value?: string })?.value) || ''
   const [discordLink, setDiscordLink] = React.useState(initialDiscord)
 
   return (
@@ -37,7 +39,7 @@ export default function AdminSettings({ settings, onToggleLock, onSave }: Props)
               try {
                 await onSave('discord_link', discordLink)
                 setMessage('Saved')
-              } catch (e: any) {
+              } catch {
                 setMessage('Save failed')
               }
             }} className="ml-2 px-3 py-1 rounded bg-emerald-600 text-white">Save</button>
@@ -62,7 +64,7 @@ export default function AdminSettings({ settings, onToggleLock, onSave }: Props)
                 } else {
                   setMessage('Update published')
                 }
-              } catch (e) {
+              } catch {
                 setMessage('Network error')
               }
             }} className="ml-2 px-3 py-1 rounded bg-emerald-600 text-white">Publish</button>

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Head from 'next/head'
 import ProtectedRoute from '../components/ProtectedRoute'
-import { useSession, useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import { AdminTabs, AdminAnnouncements, AdminUsers, AdminSettings, AdminReleases, AdminQuotas } from '../components/admin'
+import type { Session } from '@supabase/supabase-js'
+import type { Setting } from '../types'
 
 interface Announcement {
   id: string
@@ -26,14 +28,13 @@ export default function AdminPage() {
 function AdminContent() {
   const session = useSession()
   const supabase = useSupabaseClient()
-  const user = useUser()
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   const [serverCheckWarning, setServerCheckWarning] = useState<string | null>(null)
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [users, setUsers] = useState<any[]>([])
-  const [settings, setSettings] = useState<any[]>([])
+  const [users, setUsers] = useState<Array<{ id: string; email: string; full_name?: string; last_sign_in_at?: string; is_admin?: boolean; profile_id?: string; disabled?: boolean; banned_until?: string | null; ban_reason?: string | null; quota_limit?: number | null }>>([])
+  const [settings, setSettings] = useState<Setting[]>([])
 
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', body: '', starts_at: '', ends_at: '' })
 
@@ -48,6 +49,21 @@ function AdminContent() {
 
   const [activeTab, setActiveTab] = useState(tabs[0].id)
 
+  const loadAll = useCallback(async (token: string) => {
+    // Load all announcements (admin can see all)
+    const annRes = await fetch('/api/admin/announcements', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
+    const annJ = await annRes.json()
+    if (annRes.ok) setAnnouncements(annJ.announcements || [])
+
+    const usersRes = await fetch('/api/admin/users', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
+    const usersJ = await usersRes.json()
+    if (usersRes.ok) setUsers(usersJ.users || [])
+
+    const settingsRes = await fetch('/api/admin/settings', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
+    const settingsJ = await settingsRes.json()
+    if (settingsRes.ok) setSettings(settingsJ.settings || [])
+  }, [])
+
   useEffect(() => {
     if (!session) {
       console.log('[AdminContent] No session, skipping admin check')
@@ -59,10 +75,10 @@ function AdminContent() {
         console.log('[AdminContent] Starting admin check with session:', session)
         // Authoritative server-side admin check. Always call server API rather than relying on
         // client-side table queries to avoid exposing DB to the browser or depending on client keys.
-        let token = (session as any)?.access_token
+        let token = (session as Session)?.access_token
         if (!token) {
           const s = await supabase.auth.getSession()
-          token = (s as any)?.data?.session?.access_token
+          token = s?.data?.session?.access_token
         }
         console.log('[AdminContent] Token extracted:', token ? 'YES (length=' + token.length + ')' : 'NO')
 
@@ -95,22 +111,7 @@ function AdminContent() {
         console.log('[AdminContent] Loading finished, isAdmin state updated')
       }
     })()
-  }, [session])
-
-  async function loadAll(token: string) {
-    // Load all announcements (admin can see all)
-    const annRes = await fetch('/api/admin/announcements', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
-    const annJ = await annRes.json()
-    if (annRes.ok) setAnnouncements(annJ.announcements || [])
-
-    const usersRes = await fetch('/api/admin/users', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
-    const usersJ = await usersRes.json()
-    if (usersRes.ok) setUsers(usersJ.users || [])
-
-    const settingsRes = await fetch('/api/admin/settings', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } })
-    const settingsJ = await settingsRes.json()
-    if (settingsRes.ok) setSettings(settingsJ.settings || [])
-  }
+  }, [session, supabase.auth, loadAll])
 
   async function createAnnouncement(e: React.FormEvent) {
     e.preventDefault()
@@ -130,10 +131,10 @@ function AdminContent() {
     }
   }
 
-  async function performUserAction(action: string, target_user_id: string, extra?: any) {
+  async function performUserAction(action: string, target_user_id: string, extra?: Record<string, unknown>) {
     if (!session) return
     const token = session.access_token
-    const body: any = { action, target_user_id }
+    const body: Record<string, unknown> = { action, target_user_id }
     if (action === 'ban') {
       const reason = extra?.reason ?? prompt('Reason for ban (optional)')
       const until = extra?.until ?? prompt('Ban until (ISO timestamp, optional)')
@@ -168,7 +169,7 @@ function AdminContent() {
   async function toggleLock() {
     if (!session) return
     const token = session.access_token
-    const current = settings.find((s: any) => s.key === 'software_locked')
+    const current = settings.find((s: Setting) => s.key === 'software_locked')
     const newValue = { value: !(current?.value?.value || false) }
     const res = await fetch('/api/admin/settings', {
       method: 'POST',
@@ -203,14 +204,8 @@ function AdminContent() {
     await createAnnouncement(e)
   }
 
-  const handleUserAction = async (action: string, userId: string) => {
-    // Allow passing structured payload via a specially formatted action string or via overload
-    // If action contains a JSON payload it will be ignored here — AdminUsers will call performUserAction directly
-    await performUserAction(action, userId)
-  }
-  
   // Exposed to quota tab to update global defaults
-  async function saveSetting(key: string, value: any) {
+  async function saveSetting(key: string, value: Record<string, unknown> | number | string) {
     if (!session) return
     const token = session.access_token
     const res = await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ key, value }) })
@@ -218,12 +213,12 @@ function AdminContent() {
     await loadAll(token)
   }
 
-  async function saveRelease(value: any) {
+  async function saveRelease(value: Record<string, unknown>) {
     // Use session token to authorize
-    let token = (session as any)?.access_token
+    let token = (session as Session)?.access_token
     if (!token) {
       const s = await supabase.auth.getSession()
-      token = (s as any)?.data?.session?.access_token
+      token = s?.data?.session?.access_token
     }
     if (!token) throw new Error('Missing token')
 

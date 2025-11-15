@@ -70,14 +70,14 @@ export default function VerifyPage() {
             const t = setTimeout(() => router.replace('/dashboard'), 1500)
             return () => clearTimeout(t)
           }
-        } catch (err) {
+        } catch {
           setError('Failed to confirm device')
         }
       }
     }
 
     tryConfirmDevice()
-  }, [user, method, router])
+  }, [user, method, router, supabaseClient.auth])
 
   // Provide an action to re-send a magic link if a user lands here without
   // being signed in and wants another email. This is intentionally rate

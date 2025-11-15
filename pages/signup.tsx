@@ -78,7 +78,7 @@ export default function SignupPage() {
 
     if (data?.user) {
       try {
-        const { data: profileData, error: upsertError } = await supabaseClient.from('profiles').upsert({
+        const { error: upsertError } = await supabaseClient.from('profiles').upsert({
           user_id: data.user.id,
           full_name: trimmedName,
         })
@@ -88,7 +88,7 @@ export default function SignupPage() {
         }
       } catch (e: unknown) {
         console.error('Unexpected error creating profile row:', e)
-        setFeedback({ type: 'error', message: `Unexpected error creating profile: ${e?.message || e}` })
+        setFeedback({ type: 'error', message: `Unexpected error creating profile: ${(e as Error)?.message || e}` })
       }
     }
 

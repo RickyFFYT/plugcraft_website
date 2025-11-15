@@ -20,8 +20,8 @@ async function getUserFromBearer(req: NextApiRequest) {
   if (!token) return null
   // Try to get user from JWT token using anon key client first.
   // If that fails (some token types require a service role check), fall back to the admin client.
-  const attempts: any = { anon: { ok: false, error: null }, admin: { ok: false, error: null } }
-  let user: any = null
+  const attempts: { anon: { ok: boolean; error: string | null }; admin: { ok: boolean; error: string | null } } = { anon: { ok: false, error: null }, admin: { ok: false, error: null } }
+  let user: { id: string; email?: string } | null = null
 
   try {
     const { data, error } = await supabaseAnon.auth.getUser(token)
@@ -30,8 +30,8 @@ async function getUserFromBearer(req: NextApiRequest) {
       attempts.anon.ok = true
       user = data.user
     }
-  } catch (err: any) {
-    attempts.anon.error = String(err?.message || err)
+  } catch (err: unknown) {
+    attempts.anon.error = String((err as Error)?.message || err)
   }
 
   if (!user) {
@@ -42,8 +42,8 @@ async function getUserFromBearer(req: NextApiRequest) {
         attempts.admin.ok = true
         user = data.user
       }
-    } catch (err: any) {
-      attempts.admin.error = String(err?.message || err)
+    } catch (err: unknown) {
+      attempts.admin.error = String((err as Error)?.message || err)
     }
   }
 
@@ -51,7 +51,7 @@ async function getUserFromBearer(req: NextApiRequest) {
 }
 
 async function getAdminInfoForUserToken(req: NextApiRequest) {
-  const debug: any = { foundUser: false, byProfile: false, byEmail: false, byAdminsTable: false, resolvedBy: null }
+  const debug: Record<string, unknown> = { foundUser: false, byProfile: false, byEmail: false, byAdminsTable: false, resolvedBy: null }
   const gb = await getUserFromBearer(req)
   const user = gb?.user || null
   const attempts = gb?.attempts || { anon: { ok: false }, admin: { ok: false } }
@@ -106,14 +106,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Prevent caching for this sensitive endpoint — ensure clients always get a fresh decision
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
     const { isAdmin, profile, debug } = await getAdminInfoForUserToken(req)
-    const result: any = { isAdmin: !!isAdmin }
+    const result: Record<string, unknown> = { isAdmin: !!isAdmin }
     if (profile) result.profile = profile
     // Only return debug details in non-production to avoid leaking user data
     if (process.env.NODE_ENV !== 'production') {
       result.debug = debug
     }
     return res.status(200).json(result)
-  } catch (err: any) {
-    return res.status(500).json({ error: err?.message || 'Server error' })
+  } catch (err: unknown) {
+    return res.status(500).json({ error: (err as Error)?.message || 'Server error' })
   }
 }

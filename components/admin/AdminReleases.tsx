@@ -1,17 +1,17 @@
 import React, { useMemo, useState } from 'react'
 
 interface Props {
-  settings: any[]
-  onSave: (value: any) => Promise<void>
+  settings: Array<{ key: string; value: unknown }>
+  onSave: (value: Record<string, unknown>) => Promise<void>
 }
 
 export default function AdminReleases({ settings, onSave }: Props) {
   const current = useMemo(() => {
-    const s = (settings || []).find((x: any) => x.key === 'latest_release')
-    return s?.value || { name: 'Ghosted', version: '', notes: '', download_url: '' }
+    const s = (settings || []).find(x => x.key === 'latest_release')
+    return (s?.value as { name: string; version: string; notes: string; download_url: string }) || { name: 'Ghosted', version: '', notes: '', download_url: '' }
   }, [settings])
 
-  const [form, setForm] = useState<any>({ ...current })
+  const [form, setForm] = useState<{ name: string; version: string; notes: string; download_url: string }>({ name: 'Ghosted', version: '', notes: '', download_url: '' })
   // Keep form synced if settings change externally
   React.useEffect(() => {
     setForm({ ...current })
@@ -25,8 +25,8 @@ export default function AdminReleases({ settings, onSave }: Props) {
     try {
       await onSave(form)
       alert('Release saved')
-    } catch (err: any) {
-      alert('Save failed: ' + (err?.message || 'unknown'))
+    } catch (err: unknown) {
+      alert('Save failed: ' + ((err as Error)?.message || 'unknown'))
     } finally {
       setSaving(false)
     }

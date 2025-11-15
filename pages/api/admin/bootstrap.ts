@@ -42,11 +42,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Get user from token
-    let user: any = null
+    let user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null = null
     try {
       const { data } = await supabaseAdmin.auth.getUser(token)
       if (data?.user) user = data.user
-    } catch (err) {
+    } catch {
       return res.status(401).json({ error: 'Invalid token' })
     }
 
@@ -108,8 +108,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       email,
       userId,
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Bootstrap error:', err)
-    return res.status(500).json({ error: err?.message || 'Server error' })
+    return res.status(500).json({ error: (err as Error)?.message || 'Server error' })
   }
 }

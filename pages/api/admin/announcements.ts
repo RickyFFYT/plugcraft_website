@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (error) return res.status(500).json({ error: error.message })
 
       // Filter active announcements
-      const active = (data || []).filter((a: any) => {
+      const active = (data || []).filter((a: { starts_at?: string; ends_at?: string }) => {
         const starts = a.starts_at ? new Date(a.starts_at).toISOString() <= now : true
         const ends = a.ends_at ? new Date(a.ends_at).toISOString() > now : true
         return starts && ends
@@ -86,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'PUT') {
       const { id, title, body, starts_at, ends_at } = req.body
       if (!id) return res.status(400).json({ error: 'Missing id' })
-      const updates: any = {}
+      const updates: Record<string, unknown> = {}
       if (title !== undefined) updates.title = title
       if (body !== undefined) updates.body = body
       if (starts_at !== undefined) updates.starts_at = starts_at
@@ -113,7 +113,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.setHeader('Allow', 'GET, POST, PUT, DELETE')
     return res.status(405).json({ error: 'Method not allowed' })
-  } catch (err: any) {
-    return res.status(500).json({ error: err?.message || 'Server error' })
+  } catch (err: unknown) {
+    return res.status(500).json({ error: (err as Error)?.message || 'Server error' })
   }
 }

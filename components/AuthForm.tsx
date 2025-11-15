@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase, getAuthRedirectUrl } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 interface AuthFormProps {
   type: 'login' | 'signup'
@@ -12,7 +12,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null)
 
-  const isEmailVerified = (user: any) => {
+  const isEmailVerified = (user: { email_confirmed_at?: string; confirmed_at?: string }) => {
     // Support both Supabase fields that may be present depending on versions
     return Boolean(user?.email_confirmed_at || user?.confirmed_at)
   }
@@ -62,14 +62,14 @@ export default function AuthForm({ type }: AuthFormProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email.trim(), password }),
         })
-        const signinJson: any = await signinResp.json().catch(() => null)
+        const signinJson: { error?: string; data?: { session?: { access_token: string; refresh_token: string }; user?: { email_confirmed_at?: string; confirmed_at?: string } } } | null = await signinResp.json().catch(() => null)
         if (!signinResp.ok) {
           setFeedback({ type: 'error', message: signinJson?.error || 'Failed to sign in' })
         } else {
           const { data } = signinJson || {}
           if (data?.session) {
             try {
-              await supabase.auth.setSession(data.session)
+              await supabase.auth.setSession(data.session as { access_token: string; refresh_token: string })
             } catch (e) {
               console.warn('Failed to set session:', e)
             }
@@ -83,8 +83,8 @@ export default function AuthForm({ type }: AuthFormProps) {
           }
         }
       }
-    } catch (err: any) {
-      setFeedback({ type: 'error', message: err?.message || 'Authentication failed' })
+    } catch (err: unknown) {
+      setFeedback({ type: 'error', message: (err as Error)?.message || 'Authentication failed' })
     } finally {
       setLoading(false)
     }
